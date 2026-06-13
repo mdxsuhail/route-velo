@@ -11,16 +11,23 @@
 
 ## 📖 Overview
 
-RouteVelo is a premium React SPA that modernizes the informal KSRTC bus conductor parcel delivery system. It connects **Customers**, **Drivers (Conductors)**, and **Admins** in a unified real-time simulation sandbox, complete with interactive SVG route maps, a live diagnostics cockpit, and an AI assistant (VeloBot).
+RouteVelo is a premium React SPA that modernizes the informal KSRTC bus conductor parcel delivery system. It connects **Customers**, **Drivers (Conductors)**, and **Admins** in a unified real-time simulation sandbox, complete with a state-of-the-art glassmorphic authentication gate, dual interactive Leaflet.js real GPS maps (for both Admin dispatchers and Customers tracking their packages), a live diagnostics cockpit, and an AI assistant (VeloBot).
 
 ---
 
 ## ✨ Features
 
+### 🔐 Premium Auth Gate
+- **Tabbed Login options** for Customer, Conductor, and Admin credentials
+- **OTP Verification Flow** for customer simulation (animated digit boxes with focus shifting)
+- **Badge/Passkey Verification** for drivers (e.g. `DRV-9932`) and admins (`KSRTC-ADMIN-2026`)
+- **Developer Bypass Shortcuts** (Google/Apple login simulations and immediate role switch)
+- **Session Termination** — fully functional Sign Out capability from all views
+
 ### 👤 Customer Dashboard
 - **Wallet** with UPI top-up simulation and full transaction history
 - **Active Orders** with live filtering (All / Sending / Receiving) and real-time search
-- **Interactive SVG Route Map** — animated bus icon moving along geo-accurate depot nodes
+- **Interactive Leaflet.js GPS Route Map** — real-world dark-mode map centering on the active bus, with route stop depot markers and geodesic path polylines
 - **VeloBot AI Chat** — responds to `/status`, `/eta`, `/driver`, `/otp` queries using live state
 - **Booking Flow** (4-step) — destination, contacts, pricing tier (Express / Standard / Economy), fare breakdown with GST
 - **Loyalty Streak** rewards system with RouteCoins
@@ -37,6 +44,7 @@ RouteVelo is a premium React SPA that modernizes the informal KSRTC bus conducto
 
 ### 🛠 Admin Command Center
 - **Live KPI Dashboard** — Total Revenue & Active Load counts
+- **Global Fleet Tracker Map** — integrated dark-mode CartoDB Leaflet map displaying South/Central Karnataka routes with live pulsing bus markers and diagnostic tooltip popups
 - **SVG Bar Chart** — Daily revenue trend (Mon–Sun), clickable bars
 - **SVG Donut Chart** — Cargo classification split (Express / Standard / Economy)
 - **Fleet Monitor Table** — All buses with live status, speed, fuel
@@ -60,7 +68,7 @@ RouteVelo is a premium React SPA that modernizes the informal KSRTC bus conducto
 | Icons | Lucide React |
 | Styling | Vanilla CSS (CSS Variables, Glassmorphism) |
 | Audio | Web Audio API (synthesized beeps/chimes) |
-| Maps | Custom SVG vector route visualizer |
+| Maps | Leaflet.js, OpenStreetMap, CartoDB Dark Matter tiles |
 | Charts | Hand-crafted SVG bar & donut charts |
 | State | React `useState` / `useEffect` (no external store) |
 | Font | Outfit + JetBrains Mono (Google Fonts) |
