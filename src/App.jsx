@@ -163,7 +163,7 @@ const playSound = (type) => {
       gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
       osc.start();
       osc.stop(ctx.currentTime + 0.2);
-    } else if (type === 'warning') {
+        } else if (type === 'warning') {
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(300, ctx.currentTime);
       osc.frequency.linearRampToValueAtTime(150, ctx.currentTime + 0.3);
@@ -171,6 +171,41 @@ const playSound = (type) => {
       gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
       osc.start();
       osc.stop(ctx.currentTime + 0.3);
+    } else if (type === 'lock') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(120, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(10, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } else if (type === 'hiss') {
+      const bufferSize = ctx.sampleRate * 0.4;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1200, ctx.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(3500, ctx.currentTime + 0.4);
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.03, ctx.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      noise.start();
+    } else if (type === 'pump') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(75, ctx.currentTime);
+      gain.gain.setValueAtTime(0.06, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.18);
     }
   } catch (e) {
     // Fail silently if audio context is blocked
@@ -684,10 +719,35 @@ export default function App() {
   const [geofenceActive, setGeofenceActive] = useState(false);
   const [geofenceTimer, setGeofenceTimer] = useState(120);
 
-  // System Alerts (Admin / Dashboard)
+    // System Alerts (Admin / Dashboard)
   const [systemAlerts, setSystemAlerts] = useState([
     { id: 'ALT-1', busId: 'KS-442', title: 'Low Tire Pressure', desc: 'Front left tire at 28 PSI. Drive with caution.', severity: 'medium' }
   ]);
+
+  // --- Troubleshooting & Confetti states ---
+  const [troubleshootType, setTroubleshootType] = useState(null); // 'engine_heat', 'tire_low'
+  const [troubleshootStep, setTroubleshootStep] = useState(0);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiParticles, setConfettiParticles] = useState([]);
+
+  const triggerConfettiEffect = () => {
+    playSound('bell');
+    const colors = ['#f59e0b', '#dc2626', '#10b981', '#3b82f6', '#d946ef', '#06b6d4'];
+    const particles = Array.from({ length: 80 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100, // percentage width
+      delay: Math.random() * 0.5,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      size: Math.random() * 6 + 4,
+      left: Math.random() * 100
+    }));
+    setConfettiParticles(particles);
+    setShowConfetti(true);
+    setTimeout(() => {
+      setShowConfetti(false);
+      setConfettiParticles([]);
+    }, 2800);
+  };
 
   const t = TRANSLATIONS[appLanguage] || TRANSLATIONS.English;
 
@@ -1183,7 +1243,7 @@ export default function App() {
     addLog(`LOGISTICS: Parcel ${parcelId} successfully delivered via OTP. Collected ₹${fare}.`);
   };
 
-  const adHocDropParcel = (parcelId) => {
+    const adHocDropParcel = (parcelId) => {
     playSound('chime');
     setParcels(prev => prev.map(p => p.id === parcelId ? {
       ...p,
@@ -1191,6 +1251,19 @@ export default function App() {
       history: [...p.history, { time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), msg: 'Conductor completed ad-hoc kiosk drop' }]
     } : p));
     addLog(`LOGISTICS: Parcel ${parcelId} marked Ad-Hoc Kiosk drop.`);
+  };
+
+  const depositParcelInLocker = (parcelId, lockerId) => {
+    playSound('chime');
+    playSound('lock');
+    setLockers(prev => prev.map(l => l.id === lockerId ? { ...l, status: 'Occupied', parcelId: parcelId } : l));
+    setParcels(prev => prev.map(p => p.id === parcelId ? {
+      ...p,
+      history: [...p.history, { time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), msg: `Deposited by conductor in secure Depot Locker ${lockerId}. PIN code issued to recipient.` }]
+    } : p));
+    addLog(`LOCKER: Conductor deposited parcel ${parcelId} in secure locker ${lockerId}.`);
+    speakText(`Parcel deposited in locker ${lockerId}`, appLanguage);
+    setToast({ title: 'Locker Deposit Complete', message: `Parcel ${parcelId} was locked in ${lockerId}.` });
   };
 
   const startOtpGeofence = () => {
@@ -1219,9 +1292,10 @@ export default function App() {
     const otpRef3 = useRef(null);
     const otpRefs = [otpRef0, otpRef1, otpRef2, otpRef3];
 
-    // Generate simulated OTP when phone number step is finished
-    const handleSendOtp = () => {
-      if (phoneNumber.length !== 10) {
+        // Generate simulated OTP when phone number step is finished
+    const handleSendOtp = (overrideNum) => {
+      const activeNum = typeof overrideNum === 'string' ? overrideNum : phoneNumber;
+      if (activeNum.length !== 10) {
         playSound('warning');
         alert('Please enter a valid 10-digit mobile number.');
         return;
@@ -1230,7 +1304,7 @@ export default function App() {
       const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
       setSimulatedOtp(randomOtp);
       setLoginStep('otp');
-      addLog(`AUTH: Generated OTP ${randomOtp} for verification of phone +91 ${phoneNumber}`);
+      addLog(`AUTH: Generated OTP ${randomOtp} for verification of phone +91 ${activeNum}`);
       speakText(`Your code is ${randomOtp.split('').join(' ')}`, appLanguage);
     };
 
@@ -1342,13 +1416,19 @@ export default function App() {
                         type="tel"
                         maxLength="10"
                         placeholder="98765 43210"
-                        value={phoneNumber}
-                        onChange={e => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                                                value={phoneNumber}
+                        onChange={e => {
+                          const val = e.target.value.replace(/[^0-9]/g, '');
+                          setPhoneNumber(val);
+                          if (val.length === 10) {
+                            handleSendOtp(val);
+                          }
+                        }}
                         style={{ paddingLeft: '6px' }}
                       />
                     </div>
                   </div>
-                  <button className="btn btn-primary w-full" onClick={handleSendOtp}>
+                  <button className="btn btn-primary w-full" onClick={() => handleSendOtp()}>
                     Get Verification OTP
                   </button>
                 </div>
@@ -1449,15 +1529,50 @@ export default function App() {
             </form>
           )}
 
-          <div
-            className="dev-bypass-link"
-            onClick={() => {
-              playSound('chime');
-              setCurrentUser('Customer');
-              addLog('AUTH: Dev bypassed Auth Page.');
-            }}
-          >
-            Quick Customer Bypass
+                    <div style={{ marginTop: 20, borderTop: '1px dashed var(--glass-border)', paddingTop: 16, textAlign: 'center' }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Presentation / Demo Bypass
+            </span>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', alignItems: 'center' }}>
+              <span
+                className="dev-bypass-link"
+                style={{ marginTop: 0 }}
+                onClick={() => {
+                  playSound('chime');
+                  setCurrentUser('Customer');
+                  addLog('AUTH: Demo bypassed to Customer dashboard.');
+                  setToast({ title: 'Welcome Back', message: 'Logged in as Customer.' });
+                }}
+              >
+                Customer
+              </span>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>•</span>
+              <span
+                className="dev-bypass-link"
+                style={{ marginTop: 0 }}
+                onClick={() => {
+                  playSound('chime');
+                  setCurrentUser('Driver');
+                  addLog('AUTH: Demo bypassed to Conductor dashboard.');
+                  setToast({ title: 'Shift Started', message: 'Logged in as Conductor.' });
+                }}
+              >
+                Conductor
+              </span>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>•</span>
+              <span
+                className="dev-bypass-link"
+                style={{ marginTop: 0 }}
+                onClick={() => {
+                  playSound('chime');
+                  setCurrentUser('Admin');
+                  addLog('AUTH: Demo bypassed to Admin dashboard.');
+                  setToast({ title: 'Command Center Active', message: 'Logged in as Admin.' });
+                }}
+              >
+                Admin
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -1782,7 +1897,7 @@ export default function App() {
         {/* Message Panel */}
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10, paddingRight: 4, marginBottom: 12 }}>
           {messages.map((m, idx) => (
-            <div 
+                        <div 
               key={idx} 
               style={{ 
                 alignSelf: m.sender === 'user' ? 'flex-end' : 'flex-start',
@@ -1792,10 +1907,22 @@ export default function App() {
                 borderRadius: '12px',
                 maxWidth: '85%',
                 fontSize: '0.8rem',
-                border: m.sender === 'bot' ? '1px solid var(--glass-border)' : 'none'
+                border: m.sender === 'bot' ? '1px solid var(--glass-border)' : 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8
               }}
             >
-              {m.text}
+              <span>{m.text}</span>
+              {m.sender === 'bot' && (
+                <button 
+                  onClick={(e) => { e.stopPropagation(); playSound('click'); speakText(m.text, appLanguage); }} 
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 2, fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}
+                  title="Speak reply"
+                >
+                  🔊
+                </button>
+              )}
             </div>
           ))}
           {isBotTyping && (
@@ -1808,9 +1935,9 @@ export default function App() {
           <div ref={chatEndRef} />
         </div>
 
-        {/* Quick Suggest Chips */}
+                {/* Quick Suggest Chips */}
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 6, marginBottom: 8 }}>
-          {['Check ETA', 'Locker Status', 'Weather Query'].map(chip => (
+          {['Check ETA', 'Locker PIN', 'Conductor Details', 'Weather Condition'].map(chip => (
             <button 
               key={chip} 
               onClick={() => handleSend(chip)}
@@ -1966,9 +2093,30 @@ export default function App() {
                      </div>
                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Conductor Bus: <strong>{p.bus}</strong></span>
                    </div>
-                   <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }} className="flex flex-col gap-xs">
+                                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }} className="flex flex-col gap-xs">
                      <div>Dest: <strong style={{ color: 'var(--text-main)' }}>{p.destination.split(',')[0]}</strong></div>
                      {b && <div>ETA: <strong style={{ color: 'var(--primary-light)' }}>{b.eta}</strong> (Progress: {b.progress}%)</div>}
+                     {(() => {
+                       const lockerObj = lockers.find(l => l.parcelId === p.id && l.status === 'Occupied');
+                       if (lockerObj) {
+                         return (
+                           <button 
+                             className="btn btn-secondary w-full" 
+                             style={{ marginTop: 8, padding: '6px 10px', fontSize: '0.72rem', background: 'var(--accent-glow)', border: '1px solid var(--accent)', color: 'var(--accent)', fontWeight: 800, height: 'auto' }} 
+                             onClick={(e) => { 
+                               e.stopPropagation(); 
+                               playSound('click'); 
+                               setLockerIdClaimInput(lockerObj.id); 
+                               setLockerPinInput('');
+                               setActiveLockerClaim('verify_pin'); 
+                             }}
+                           >
+                             🔑 Open Smart Locker {lockerObj.id}
+                           </button>
+                         );
+                       }
+                       return null;
+                     })()}
                    </div>
                  </div>
                );
@@ -1984,13 +2132,19 @@ export default function App() {
                    <Star color="var(--accent)" fill="var(--accent)" size={48} style={{ marginBottom: 12, filter: 'drop-shadow(0 0 12px var(--accent))' }} />
                    <h2 style={{ fontSize: '1.5rem' }}>Loyalty Streak!</h2>
                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 16 }}>You have booked log entries on 4 consecutive days.</p>
-                   <button className="btn btn-primary w-full" onClick={() => { playSound('chime'); setShowStreak(false); setWalletBalance(w => w + 50); addLog('REWARD: Claimed 50 RouteCoins (Added to wallet)'); }} style={{ background: 'var(--accent)' }}>Claim ₹50 RouteCoins</button>
+                   <button className="btn btn-primary w-full" onClick={() => { 
+                      setShowStreak(false); 
+                      setRouteCoins(c => c + 50);
+                      setWalletBalance(w => w + 50); 
+                      addLog('REWARD: Claimed 50 RouteCoins and Rs.50 KSRTC Wallet balance!'); 
+                      triggerConfettiEffect();
+                    }} style={{ background: 'var(--accent)' }}>Claim 50 Coins & Rs.50 Cash</button>
                    <button className="btn w-full" onClick={() => setShowStreak(false)} style={{ background: 'transparent', color: 'var(--text-muted)', marginTop: 8 }}>Close</button>
                 </div>
              </motion.div>
             )}
 
-            {/* RouteCoins Shop Modal */}
+                        {/* RouteCoins Shop Modal */}
             {showCoinsShop && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 4000, background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 20 }}>
                 <div className="card w-full" style={{ maxWidth: 360, margin: '0 auto' }}>
@@ -1998,7 +2152,13 @@ export default function App() {
                     <h3 style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800 }}><Coins color="var(--accent)"/> RouteCoins Shop</h3>
                     <button onClick={() => setShowCoinsShop(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>&times;</button>
                   </div>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 12 }}>Your Coins: <strong style={{ color: 'var(--accent)' }}>₹{routeCoins} RouteCoins</strong></p>
+                  
+                  {/* Rotating gold coin graphic */}
+                  <div className="gold-coin-container">
+                    <div className="gold-coin">🪙</div>
+                  </div>
+
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 12, textAlign: 'center' }}>Your Coins: <strong style={{ color: 'var(--accent)' }}>₹{routeCoins} RouteCoins</strong></p>
                   
                   <div className="flex flex-col gap-sm" style={{ maxHeight: 250, overflowY: 'auto' }}>
                     <div className="flex justify-between items-center card" style={{ padding: 10, background: 'var(--input-bg)' }}>
@@ -2007,11 +2167,38 @@ export default function App() {
                         <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Get coupon code 'SAVE10'</p>
                       </div>
                       <button className="btn btn-primary" style={{ padding: '6px 10px', fontSize: '0.7rem' }} disabled={routeCoins < 50} onClick={() => {
-                        playSound('chime');
                         setRouteCoins(c => c - 50);
                         setCoupons(prev => [...prev, 'SAVE10']);
                         addLog('LOYALTY: Purchased 10% Fare Discount (SAVE10) for 50 RouteCoins.');
+                        triggerConfettiEffect();
                       }}>Redeem (50c)</button>
+                    </div>
+
+                    <div className="flex justify-between items-center card" style={{ padding: 10, background: 'var(--input-bg)' }}>
+                      <div>
+                        <h4 style={{ fontSize: '0.8rem' }}>₹50 KSRTC Cashback</h4>
+                        <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Add ₹50 to your active wallet</p>
+                      </div>
+                      <button className="btn btn-primary" style={{ padding: '6px 10px', fontSize: '0.7rem' }} disabled={routeCoins < 60} onClick={() => {
+                        setRouteCoins(c => c - 60);
+                        setWalletBalance(w => w + 50);
+                        setTransactions(prev => [{ id: 'TXN-CASHBACK', type: 'Deposit', amount: 50, date: 'Today, Just Now', desc: 'RouteCoins Cashback Reward', status: 'Success' }, ...prev]);
+                        addLog('LOYALTY: Redeemed 60 RouteCoins for ₹50 wallet cashback.');
+                        triggerConfettiEffect();
+                      }}>Redeem (60c)</button>
+                    </div>
+
+                    <div className="flex justify-between items-center card" style={{ padding: 10, background: 'var(--input-bg)' }}>
+                      <div>
+                        <h4 style={{ fontSize: '0.8rem' }}>KSRTC Coffee Coupon</h4>
+                        <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Depot Coffee voucher 'COFFEE50'</p>
+                      </div>
+                      <button className="btn btn-primary" style={{ padding: '6px 10px', fontSize: '0.7rem' }} disabled={routeCoins < 30} onClick={() => {
+                        setRouteCoins(c => c - 30);
+                        setCoupons(prev => [...prev, 'COFFEE50']);
+                        addLog('LOYALTY: Purchased Coffee Voucher (COFFEE50) for 30 RouteCoins.');
+                        triggerConfettiEffect();
+                      }}>Redeem (30c)</button>
                     </div>
 
                     <div className="flex justify-between items-center card" style={{ padding: 10, background: 'var(--input-bg)' }}>
@@ -2020,10 +2207,10 @@ export default function App() {
                         <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Show VIP star next to name</p>
                       </div>
                       <button className="btn btn-primary" style={{ padding: '6px 10px', fontSize: '0.7rem' }} disabled={routeCoins < 100 || userBadge === 'VIP'} onClick={() => {
-                        playSound('chime');
                         setRouteCoins(c => c - 100);
                         setUserBadge('VIP');
                         addLog('LOYALTY: Purchased VIP Loyalty Badge for 100 RouteCoins.');
+                        triggerConfettiEffect();
                       }}>{userBadge === 'VIP' ? 'Owned' : 'Redeem (100c)'}</button>
                     </div>
 
@@ -2033,10 +2220,10 @@ export default function App() {
                         <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Unlock purple styling</p>
                       </div>
                       <button className="btn btn-primary" style={{ padding: '6px 10px', fontSize: '0.7rem' }} disabled={routeCoins < 120 || unlockedThemes.includes('cyberpunk')} onClick={() => {
-                        playSound('chime');
                         setRouteCoins(c => c - 120);
                         setUnlockedThemes(prev => [...prev, 'cyberpunk']);
                         addLog('LOYALTY: Unlocked Cyberpunk Purple Theme for 120 RouteCoins.');
+                        triggerConfettiEffect();
                       }}>{unlockedThemes.includes('cyberpunk') ? 'Unlocked' : 'Redeem (120c)'}</button>
                     </div>
                   </div>
@@ -2078,16 +2265,60 @@ export default function App() {
                     <button onClick={() => { setActiveLockerClaim(null); setLockerPinInput(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>&times;</button>
                   </div>
                   
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 12 }}>Select a locker to retrieve your parcel. Enter the 6-digit locker PIN.</p>
-                  
-                  <div className="input-group" style={{ marginBottom: 10 }}>
-                    <label className="input-label">Select Locker Box</label>
-                    <select value={lockerIdClaimInput} onChange={e => setLockerIdClaimInput(e.target.value)}>
-                      <option value="">Choose locker...</option>
-                      {lockers.map(l => (
-                        <option key={l.id} value={l.id}>{l.id} — {l.location.split(',')[0]} ({l.status})</option>
-                      ))}
-                    </select>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 12 }}>Select your locker box from the grid below, then enter the 6-digit PIN.</p>
+
+                  {/* Visual Interactive Locker Box Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
+                    {lockers.map(l => {
+                      const isSelected = lockerIdClaimInput === l.id;
+                      const isOccupied = l.status === 'Occupied';
+                      return (
+                        <div 
+                          key={l.id} 
+                          onClick={() => {
+                            if (isOccupied) {
+                              playSound('click');
+                              setLockerIdClaimInput(l.id);
+                              setLockerPinInput('');
+                            } else {
+                              playSound('warning');
+                              alert('This locker box is vacant.');
+                            }
+                          }}
+                          style={{
+                            padding: '12px 8px',
+                            background: isSelected ? 'var(--primary-glow)' : 'var(--input-bg)',
+                            border: isSelected 
+                              ? '1.5px solid var(--primary)' 
+                              : isOccupied 
+                              ? '1px solid var(--accent-glow)' 
+                              : '1px solid var(--glass-border)',
+                            borderRadius: 10,
+                            cursor: isOccupied ? 'pointer' : 'not-allowed',
+                            opacity: isOccupied ? 1 : 0.45,
+                            transition: 'all 0.2s ease',
+                            position: 'relative',
+                            textAlign: 'center'
+                          }}
+                        >
+                          {/* LED indicator */}
+                          <div className={isOccupied ? "led-pulse-active" : ""} style={{
+                            position: 'absolute',
+                            top: 6,
+                            right: 6,
+                            width: 6,
+                            height: 6,
+                            borderRadius: '50%',
+                            background: isOccupied ? 'var(--accent)' : 'var(--success)'
+                          }} />
+                          <div style={{ fontSize: '1.2rem', marginBottom: 2 }}>📦</div>
+                          <div style={{ fontSize: '0.7rem', fontWeight: 800, color: isSelected ? 'var(--text-main)' : 'var(--text-muted)' }}>{l.id}</div>
+                          <div style={{ fontSize: '0.55rem', opacity: 0.8, color: isOccupied ? 'var(--accent)' : 'var(--success)' }}>
+                            {isOccupied ? 'Locked' : 'Vacant'}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <div className="input-group" style={{ marginBottom: 16 }}>
@@ -3802,6 +4033,37 @@ export default function App() {
           </div>
         </div>
 
+                {/* Telemetry Alarm Trouble Alerts */}
+        {activeBus.temp > 100 && (
+          <div className="card animate-alert-blink" style={{ border: '1.5px solid var(--error)', background: 'var(--error-glow)', padding: 12, marginBottom: 12 }}>
+            <div className="flex justify-between items-center">
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--error)' }}>⚠️ ENGINE OVERHEAT INCIDENT ACTIVE</span>
+              <button 
+                className="btn btn-primary" 
+                style={{ padding: '6px 10px', fontSize: '0.68rem', background: 'var(--error)', border: 'none', boxShadow: 'none', height: 'auto' }}
+                onClick={() => { playSound('click'); setTroubleshootType('engine_heat'); setTroubleshootStep(0); }}
+              >
+                Troubleshoot
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeBus.tirePressure.fl < 30 && (
+          <div className="card animate-alert-blink" style={{ border: '1.5px solid var(--error)', background: 'var(--error-glow)', padding: 12, marginBottom: 12 }}>
+            <div className="flex justify-between items-center">
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--error)' }}>⚠️ CRITICAL LOW TIRE PRESSURE ACTIVE</span>
+              <button 
+                className="btn btn-primary" 
+                style={{ padding: '6px 10px', fontSize: '0.68rem', background: 'var(--error)', border: 'none', boxShadow: 'none', height: 'auto' }}
+                onClick={() => { playSound('click'); setTroubleshootType('tire_low'); setTroubleshootStep(0); }}
+              >
+                Troubleshoot
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* HUD Diagnostics */}
         <h4 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>Vehicle Diagnostics Cockpit</h4>
         <div className="card grid" style={{ padding: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
@@ -3881,9 +4143,29 @@ export default function App() {
                       </button>
                     </div>
 
-                    <button className="btn btn-secondary w-full" style={{ padding: '8px 12px', fontSize: '0.75rem', color: 'var(--error)' }} onClick={() => handleCameraBypass(p.id)}>
+                                        <button className="btn btn-secondary w-full" style={{ padding: '8px 12px', fontSize: '0.75rem', color: 'var(--error)' }} onClick={() => handleCameraBypass(p.id)}>
                        <Camera size={14} /> Absent Receiver - Bypass snap
                     </button>
+
+                    <div style={{ borderTop: '1px dashed var(--glass-border)', paddingTop: 10, marginTop: 4 }}>
+                      <span className="input-label" style={{ fontSize: '0.62rem', display: 'block', marginBottom: 4 }}>Depot Locker Allocation</span>
+                      <select 
+                        style={{ padding: '6px 10px', fontSize: '0.72rem', height: 32, background: 'var(--input-bg)', color: 'var(--text-main)', border: '1px solid var(--glass-border)', borderRadius: 8 }}
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (val) {
+                            depositParcelInLocker(p.id, val);
+                            e.target.value = '';
+                          }
+                        }}
+                        defaultValue=""
+                      >
+                        <option value="">Choose vacant locker...</option>
+                        {lockers.filter(l => l.status === 'Empty').map(l => (
+                          <option key={l.id} value={l.id}>{l.id} ({l.location.split(',')[0]})</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 )}
               </div>
@@ -3987,10 +4269,100 @@ export default function App() {
                      />
                   </div>
                </div>
-               <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 12, textAlign: 'center' }}>Place package clearly next to landmark at kiosk stand.<br/>Click shutter to save photo evidence.</p>
+                              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 12, textAlign: 'center' }}>Place package clearly next to landmark at kiosk stand.<br/>Click shutter to save photo evidence.</p>
                <button className="btn btn-secondary" style={{ marginTop: 16 }} onClick={() => setBypassCameraOpen(false)}>Cancel</button>
             </motion.div>
           )}
+
+           {/* Telemetry Troubleshooting Modal */}
+           {troubleshootType && (
+             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ position: 'fixed', inset: 0, zIndex: 4600, background: 'rgba(0,0,0,0.95)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+                <div className="card w-full" style={{ maxWidth: 360, textAlign: 'center' }}>
+                   <h3 style={{ display: 'flex', alignItems: 'center', justify: 'center', gap: 6, fontWeight: 800 }}>
+                     🔧 {troubleshootType === 'engine_heat' ? 'Radiator Coolant Troubleshoot' : 'Tire Inflation Troubleshoot'}
+                   </h3>
+                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '8px 0 16px' }}>
+                     {troubleshootType === 'engine_heat' ? 'Perform manual radiator check and air bleed sequence.' : 'Connect emergency air compressor valve to low pressure tire.'}
+                   </p>
+                   
+                   {/* Progress steps checklist */}
+                   <div className="flex flex-col gap-sm" style={{ textAlign: 'left', marginBottom: 20 }}>
+                     {troubleshootType === 'engine_heat' ? [
+                       "Verify hazard lights are active and bus is safely parked.",
+                       "Carefully open radiator pressure cap (Caution: Hot steam hiss!)",
+                       "Fill reservoir tank with coolant fluid to MAX indicator line.",
+                       "Seal cap tightly and verify telemetric sensor reset."
+                     ].map((step, idx) => {
+                       const isActive = troubleshootStep === idx;
+                       const isCompleted = troubleshootStep > idx;
+                       return (
+                         <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, background: isActive ? 'var(--primary-glow)' : 'transparent', border: isActive ? '1px solid var(--primary)' : 'none', opacity: isCompleted ? 0.6 : 1 }}>
+                           <div style={{ width: 18, height: 18, borderRadius: '50%', background: isCompleted ? 'var(--success)' : 'var(--input-bg)', border: '2px solid var(--glass-border)', display: 'flex', alignItems: 'center', justify: 'center', fontSize: '0.62rem', fontWeight: 800, color: 'white' }}>
+                             {isCompleted ? '✓' : idx + 1}
+                           </div>
+                           <span style={{ fontSize: '0.72rem', color: isActive ? 'white' : 'var(--text-muted)' }}>{step}</span>
+                         </div>
+                       );
+                     }) : [
+                       "Secure bus parking brakes and deploy wheel chocks.",
+                       "Attach emergency high-pressure compressor hose to valve.",
+                       "Toggle compressor pump switch (Listen for compressor beats!)",
+                       "Confirm tire pressure is inflated to safe 34 PSI range."
+                     ].map((step, idx) => {
+                       const isActive = troubleshootStep === idx;
+                       const isCompleted = troubleshootStep > idx;
+                       return (
+                         <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, background: isActive ? 'var(--primary-glow)' : 'transparent', border: isActive ? '1px solid var(--primary)' : 'none', opacity: isCompleted ? 0.6 : 1 }}>
+                           <div style={{ width: 18, height: 18, borderRadius: '50%', background: isCompleted ? 'var(--success)' : 'var(--input-bg)', border: '2px solid var(--glass-border)', display: 'flex', alignItems: 'center', justify: 'center', fontSize: '0.62rem', fontWeight: 800, color: 'white' }}>
+                             {isCompleted ? '✓' : idx + 1}
+                           </div>
+                           <span style={{ fontSize: '0.72rem', color: isActive ? 'white' : 'var(--text-muted)' }}>{step}</span>
+                         </div>
+                       );
+                     })}
+                   </div>
+
+                   <div className="flex gap-sm">
+                     <button className="btn btn-secondary flex-1" style={{ fontSize: '0.8rem', padding: '10px' }} onClick={() => { playSound('click'); setTroubleshootType(null); setTroubleshootStep(0); }}>
+                       Abort
+                     </button>
+                     {troubleshootStep < 3 ? (
+                       <button className="btn btn-primary flex-1" style={{ fontSize: '0.8rem', padding: '10px' }} onClick={() => {
+                         playSound('beep');
+                         if (troubleshootType === 'engine_heat') {
+                           if (troubleshootStep === 1) playSound('hiss');
+                         } else {
+                           if (troubleshootStep === 2) playSound('pump');
+                         }
+                         setTroubleshootStep(prev => prev + 1);
+                       }}>
+                         Next Step
+                       </button>
+                     ) : (
+                       <button className="btn btn-primary flex-1" style={{ fontSize: '0.8rem', padding: '10px', background: 'var(--success)', border: 'none' }} onClick={() => {
+                         if (troubleshootType === 'engine_heat') {
+                           playSound('chime');
+                           setBuses(prev => prev.map(b => b.id === 'AW-102' ? { ...b, temp: 92, speed: 52, rpm: 1600, status: 'En Route' } : b));
+                           setSystemAlerts(prev => prev.filter(a => a.busId !== 'AW-102'));
+                           addLog('DRIVER: Coolant refilled and radiator cap sealed. Temperature normalized to 92°C.');
+                           speakText("Engine coolant refilled. Temperature normalized.", appLanguage);
+                         } else {
+                           playSound('chime');
+                           setBuses(prev => prev.map(b => b.id === 'KS-442' ? { ...b, tirePressure: { ...b.tirePressure, fl: 34 }, status: 'En Route' } : b));
+                           setSystemAlerts(prev => prev.filter(a => a.busId !== 'KS-442'));
+                           addLog('DRIVER: Compressor connected and front left tire inflated to 34 PSI.');
+                           speakText("Tire pressure adjusted to 34 P S I.", appLanguage);
+                         }
+                         setTroubleshootType(null);
+                         setTroubleshootStep(0);
+                       }}>
+                         Complete Repair
+                       </button>
+                     )}
+                   </div>
+                </div>
+             </motion.div>
+           )}
         </AnimatePresence>
       </div>
     );
@@ -4395,6 +4767,10 @@ export default function App() {
   // --- Render Layout Workspace ---
   return (
     <div className="app-workspace">
+
+      {/* Premium background gradient orbs from Stitch Design System */}
+      <div className="premium-orb-1" />
+      <div className="premium-orb-2" />
       
       {/* 1. Mobile Phone Frame Simulator */}
       <div className="mobile-frame">
@@ -4533,8 +4909,9 @@ export default function App() {
         </div>
       </div>
 
-      {/* 2. Simulator Sidebar Developer Console */}
-      <div className="simulator-panel">
+            {/* 2. Simulator Sidebar Developer Console */}
+      {!import.meta.env.PROD && (
+        <div className="simulator-panel">
          <div className="flex items-center gap-sm" style={{ marginBottom: 16 }}>
             <Wrench size={22} color="var(--primary-light)" />
             <h3 style={{ fontWeight: 800 }}>Developer Simulation Deck</h3>
@@ -4602,8 +4979,28 @@ export default function App() {
             {logs.map((log, index) => (
               <div key={index} style={{ marginBottom: 4 }}>{log}</div>
             ))}
-         </div>
+                  </div>
       </div>
+      )}
+
+      {/* Confetti Particle Overlay */}
+      {showConfetti && (
+        <div className="confetti-overlay">
+          {confettiParticles.map(p => (
+            <div 
+              key={p.id} 
+              className="confetti-particle"
+              style={{
+                background: p.color,
+                width: p.size,
+                height: p.size,
+                left: `${p.left}%`,
+                animationDelay: `${p.delay}s`
+              }}
+            />
+          ))}
+        </div>
+      )}
 
     </div>
   );
