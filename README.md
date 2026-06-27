@@ -13,6 +13,8 @@
 
 RouteVelo is a premium React SPA that modernizes the informal KSRTC bus conductor parcel delivery system. It connects **Customers**, **Drivers (Conductors)**, and **Admins** in a unified real-time simulation sandbox, complete with a state-of-the-art glassmorphic authentication gate, dual interactive Leaflet.js real GPS maps (for both Admin dispatchers and Customers tracking their packages), a live diagnostics cockpit, and an AI assistant (VeloBot).
 
+The app features a highly optimized modular architecture utilizing React Context for global state, eliminating subcomponent re-mounting issues and improving performance.
+
 ---
 
 ## ✨ Features
@@ -70,7 +72,7 @@ RouteVelo is a premium React SPA that modernizes the informal KSRTC bus conducto
 | Audio | Web Audio API (synthesized beeps/chimes) |
 | Maps | Leaflet.js, OpenStreetMap, CartoDB Dark Matter tiles |
 | Charts | Hand-crafted SVG bar & donut charts |
-| State | React `useState` / `useEffect` (no external store) |
+| State | React Context API & `useContext` Hook |
 | Font | Outfit + JetBrains Mono (Google Fonts) |
 
 ---
@@ -107,14 +109,27 @@ npm run build
 
 ## 🗂 Project Structure
 
-```
+```text
 routevelo-app/
+├── index.html                  # Global Leaflet scripts and stylesheet loads
 ├── src/
-│   ├── App.jsx          # Main application (all components, state, simulation logic)
-│   └── index.css        # Design system (CSS variables, glassmorphism, utilities)
-├── index.html           # Root HTML with Google Fonts preload
-├── vite.config.js       # Vite configuration
-└── package.json
+│   ├── App.jsx                 # Router Layout & Dev Simulation Panel
+│   ├── index.css               # Main styling system, themes, and animations
+│   ├── main.jsx                # React Entrypoint
+│   ├── context/
+│   │   └── SimulationContext.jsx  # Global state, helpers, handlers, and TTS
+│   └── components/
+│       ├── Header.jsx          # Top Navigation Bar & Toast alerts
+│       ├── AuthPage.jsx        # Login Gate (Customer / Conductor / Admin)
+│       ├── CustomerDashboard.jsx  # Wallet balance, lockers, shop, kiosk map
+│       ├── BookingFlow.jsx     # Waybill generation, fare surcharges
+│       ├── OrderHistoryView.jsx# Invoice manifest lists & printable waybill
+│       ├── TrackingView.jsx    # Live transit timeline, milestones, conductor chat
+│       ├── UserProfileView.jsx # Localizations, profile settings, unlocked themes
+│       ├── DriverDashboard.jsx # Conductor Console, QR simulator, engine/tire fixes
+│       ├── AdminDashboard.jsx  # Stats, global fleet map, custom dispatcher form
+│       ├── LiveVectorTrackingMap.jsx # Interactive Leaflet map for customer tracking
+│       └── AdminFleetMap.jsx   # Interactive Leaflet map for Admin command center
 ```
 
 ---
@@ -141,19 +156,6 @@ routevelo-app/
 | Hindi (हिंदी) | ✅ Full |
 
 Change language in **Profile → Localization Language**.
-
----
-
-## 📸 Key Screens
-
-| Screen | Description |
-|---|---|
-| Auth | Role-based login (Customer / Driver / Admin) with OTP flow |
-| Customer Dashboard | Wallet, active parcels, SVG map, VeloBot |
-| Booking Flow | 4-step parcel booking with fare calculator |
-| Tracking View | Full-screen SVG route tracker + delivery milestones |
-| Driver Console | Cockpit HUD, QR scanner, geofence timer |
-| Admin Center | Revenue charts, fleet monitors, alert resolution |
 
 ---
 

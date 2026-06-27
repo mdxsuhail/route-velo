@@ -2,12 +2,17 @@
 
 This document provides a comprehensive overview of the RouteVelo logistics application, detailing every major feature, its internal workings, and state management, divided by the main user interfaces.
 
-> **Note:** RouteVelo is a React-based single-page application (SPA). All state is currently managed internally via React hooks (`useState`, `useEffect`) and simulated for demonstration purposes without a backend database.
+---
+
+## 1. Modular Context Architecture
+RouteVelo uses the React Context API (`SimulationContext.jsx`) to centralize all states and side effects. This solves the performance bottlenecks of the initial monolithic design:
+- **Zero Sub-Tree Re-mounting**: Sub-views are declared outside of `App.jsx` as standalone modular files in `src/components/`, ensuring component reconciliation is preserved.
+- **Consistent Input Focus**: Input fields do not lose focus during telemetry/simulation updates.
+- **Synchronized Audio & Voice (TTS)**: Any component can issue synthesized speech commands or audio pings using centralized `speakText` and `playSound` handles.
 
 ---
 
-## 1. Front Page (Auth / Welcome Screen)
-
+## 2. Front Page (Auth / Welcome Screen)
 The front page serves as the entry point and role-selector for the application.
 
 ### Features
@@ -17,88 +22,48 @@ The front page serves as the entry point and role-selector for the application.
 - **Glassmorphic UI**: High-end styling using CSS variables to achieve a modern, premium KSRTC aesthetic.
 
 ### Internal Working
-- **State**: Managed via `authType` (Customer/Driver/Admin) and `step` (input/otp).
-- **Flow**: Upon submitting the OTP or clicking a Social Login button, the root `currentUser` state in `App.jsx` is updated. This triggers a re-render that hides the Auth Screen and mounts either the `CustomerDashboard`, `DriverDashboard`, or `AdminDashboard` components based on the selected role.
+- **State**: Consumes `currentUser` and `activeTab` from `SimulationContext`.
+- **Flow**: Upon submitting the OTP or clicking a Social Login button, the context session is updated, rendering the appropriate dashboard view.
 
 ---
 
-## 2. Customers Page (Customer Dashboard)
-
+## 3. Customers Page (Customer Dashboard)
 The Customer Dashboard is the primary hub for end-users to book shipments, track parcels, and manage their wallet.
 
 ### Features
-
-#### Wallet & Transaction History
-- **Balance Display**: Shows current available funds.
-- **Transaction History**: Clicking "View History" opens a sliding modal displaying chronological deposits and deductions.
-- **Internal Working**: Managed by `walletBalance` and `transactions` array states. The history modal uses Framer Motion for smooth entrance/exit animations.
-
-#### Engagement & Analytics
-- **Daily Streaks**: Gamified widget rewarding users with RouteCoins for consecutive daily logins.
-- **Insights Analytics**: Displays key metrics like "Time Saved" to build retention through data.
-- **Functional Search**: Users can type parcel IDs or destinations in the search bar, instantly filtering the active dashboard list using React's `.filter()` on state arrays.
-
-#### Map Data & Location Discovery
-- **Nearest Kiosks**: A "Find Nearest KSRTC Kiosk" action that opens a simulated, interactive map overlay. It uses a custom coordinate layout to display the user's location relative to nearby hubs like Majestic and Shanthinagara, proving spatial awareness capabilities.
-
-#### Active Tracking (Live Telemetry & TTS)
-- **Real-Time Map Simulation**: Displays a stylized, animated map interface showing a bus moving along a route.
-- **Accessibility (TTS)**: Includes a "Read Status Aloud" button utilizing the native `window.speechSynthesis` API to vocally announce parcel location and status.
-- **AI Chatbot Simulator (VeloBot)**: Replaces the static support ping with a responsive chat interface. Users can type queries and receive simulated automated AI responses about their parcel status.
-
-#### Digital Waybill & Post-Delivery Ratings
-- **Waybills**: Users can view stylized invoices for completed orders.
-- **Ratings (UGC)**: Once a parcel is delivered, users can provide a 5-star rating for the driver directly in the tracking view, simulating User-Generated Content feedback collection.
+- **Wallet & Transaction History**: Shows available funds, UPI deposit simulation, and transaction logs.
+- **Daily Streaks**: Rewards users with RouteCoins for consecutive daily logins.
+- **Insights & FAQ**: Provides context on public transit courier regulations and benefits.
+- **Booking Flow**: A 4-step wizard calculating fare classes (Express/Standard/Economy), weight classes, and cargo multipliers, applying surge pricing (weather/traffic) and GST.
+- **Nearby Kiosks**: Interactive overlays pointing to Majestic and Shanthi Hub depot depots.
 
 ---
 
-## 3. Drivers Page (Driver Console)
-
-The Driver Console is an operational dashboard for KSRTC bus drivers to manage their route and deliveries.
-
-### Features
-
-#### Shift Metrics & Dispatch Hub
-- **Shift Earnings & Drops**: Displays daily earnings and completed drops at the top for quick visibility.
-- **Dispatch / SOS**: Quick access buttons to simulate calling dispatch or triggering an emergency SOS.
-
-#### Vehicle Telemetry Dashboard
-- **Diagnostics**: Drivers can view live engine temperature, oil pressure, RPM, fuel range, and tire pressure.
-
-#### Inventory & OTP Verification
-- **Delivery Validation**: Drivers must enter the exact 4-digit OTP generated by the customer's active parcel to mark it as delivered.
-- **Ad-Hoc Drop**: Allows bypassing OTP via a simulated "Camera Snap" if the receiver is absent.
-
-#### Geofence & Route Manifest
-- **Geofence Simulation**: A button triggers a countdown timer simulating bus arrival at a predefined GPS boundary.
-- **Route Manifest**: A vertical timeline mapping out past, active, and upcoming stops with ETAs and drop counts.
+## 4. Live Vector Tracking Map
+A Leaflet.js-backed dark-theme map showing real-time bus positions, route stop markers, and animated vehicle telemetry tooltips. Real-world coordinates of major Karnataka hubs (Bengaluru Majestic, Kengeri, Hassan, Mysuru, Mangaluru, Hubballi) are linearly interpolated based on simulation ticks.
 
 ---
 
-## 4. User Profiles & Global Features
-
-### User Profile Management & Localization
-A dedicated `UserProfileView` provides customers with the ability to edit personal information (Name, Email, Phone, Preferred Language), increasing personalization and data accuracy.
-- **Multi-Language Support (i18n)**: Changing the preferred language (English, Kannada, Hindi) updates a global state that translates the Customer Dashboard and Navigation menus via a centralized `TRANSLATIONS` dictionary, preparing the app for diverse regional deployment.
-
-### Global UX Improvements
-- **Haptic Feedback**: Critical actions trigger `navigator.vibrate` for a tactile, premium feel.
-- **Dark / Light Mode**: A robust CSS variable system combined with a `data-theme` attribute on the HTML root allows seamless toggling between distinct Light and Dark modes.
-- **Offline Simulation**: Toggling the WiFi icon displays an `OFFLINE MODE` banner globally, demonstrating grace-under-pressure architecture for environments with poor connectivity.
-- **Contextual Push Notifications**: A `framer-motion` Toast system provides timely, automated alerts (e.g., Streak Reminders).
+## 5. Drivers Page (Driver Console)
+An operational console for bus conductors:
+- **Pre-Shift Safety Checklist**: Enforces radiator, brake, tire pressure, and cargo lock verifications.
+- **HUD Diagnostics Cockpit**: Live telemetry gauges monitoring Engine Temperature, Fuel %, RPM, and PSI.
+- **OTP Validation & Camera Bypass**: Handover verification using secure OTP codes, with ad-hoc photo bypass uploads for absent receivers.
+- **Geofence countdowns**: Simulates KSRTC bus station arrivals.
 
 ---
 
-## 5. Admin Page (Command Center)
-
-The Admin Dashboard provides a simulated "God-view" for KSRTC Logistics Managers.
-
-### Features
-- **Financial & Fleet Overview**: Displays total daily revenue and active fleet metrics.
-- **Performance Analytics**: Visual progress bars showing On-Time Rate (e.g., 94%) and Fuel Efficiency (e.g., 4.2 km/L).
-- **Critical Alerts Feed**: A real-time monitoring feed displaying high-priority issues, such as Engine Temperature warnings or Weather Delays, complete with depot-specific action details.
+## 6. Admin Page (Command Center)
+A "God-view" console for logistics managers:
+- **KPI Metrics**: Real-time revenue trackers and active manifest logs.
+- **Analytics Charts**: Custom hand-crafted SVGs showing volume trends and classification splits.
+- **Incident Troubleshooting**: Interactively triggers coolant flushes or tire inflation procedures to resolve telemetry warning alerts.
+- **Fleet Dispatcher**: Forms to schedule and dispatch new fleet buses on active routes.
 
 ---
 
-## Summary of State Flow
-Currently, all dynamic entities (parcels, history, wallet) are initialized as constants using `useState` at the top of the respective components. When the app refreshes, state resets. For a production environment, these states would be replaced by `useEffect` data fetching logic tied to a real-time database (like Firebase or Supabase).
+## 7. Telemetry & Simulation Engine
+The `advanceSimulationTime` loop updates buses along coordinate paths:
+- Ticks speed and fuel levels dynamically.
+- Triggers environmental weather alterations (Rain/Fog overlays).
+- Injects telemetry errors (engine overheat, low tire pressure) to simulate emergency operational workflows.
