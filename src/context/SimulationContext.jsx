@@ -344,7 +344,10 @@ export const SimulationProvider = ({ children }) => {
     { id: 'KS-442', route: 'Bengaluru - Hubli', type: 'Karnataka Sarige', category: 'Economy', eta: '1 hr 12m', location: 'Nelamangala Toll', status: 'En Route', progress: 70, speed: 58, rpm: 1840, temp: 94, fuel: 42, tirePressure: { fl: 28, fr: 33, rl: 35, rr: 35 } },
     { id: 'AW-088', route: 'Bengaluru - Mangaluru', type: 'Airavat Club Class', category: 'Express', eta: '3 hrs', location: 'Majestic Depot', status: 'Scheduled', progress: 0, speed: 0, rpm: 800, temp: 75, fuel: 100, tirePressure: { fl: 35, fr: 35, rl: 36, rr: 36 } },
     { id: 'RJ-310', route: 'Mysuru - Bengaluru', type: 'Rajahamsa', category: 'Standard', eta: '15 mins', location: 'Ramanagara', status: 'En Route', progress: 75, speed: 52, rpm: 1510, temp: 89, fuel: 61, tirePressure: { fl: 34, fr: 34, rl: 35, rr: 35 } },
-    { id: 'KS-150', route: 'Bengaluru - Hubli', type: 'Karnataka Sarige', category: 'Economy', eta: '6 hrs', location: 'Majestic Depot', status: 'Scheduled', progress: 5, speed: 45, rpm: 1380, temp: 82, fuel: 95, tirePressure: { fl: 30, fr: 32, rl: 35, rr: 35 } }
+    { id: 'KS-150', route: 'Bengaluru - Hubli', type: 'Karnataka Sarige', category: 'Economy', eta: '6 hrs', location: 'Majestic Depot', status: 'Scheduled', progress: 5, speed: 45, rpm: 1380, temp: 82, fuel: 95, tirePressure: { fl: 30, fr: 32, rl: 35, rr: 35 } },
+    { id: 'AW-051', route: 'Bengaluru - Hubli', type: 'Airavat Multi-Axle', category: 'Express', eta: '50 mins', location: 'Tumakuru Stand', status: 'En Route', progress: 40, speed: 65, rpm: 1720, temp: 90, fuel: 82, tirePressure: { fl: 34, fr: 34, rl: 35, rr: 35 } },
+    { id: 'RJ-119', route: 'Bengaluru - Mysuru', type: 'Rajahamsa', category: 'Standard', eta: '1 hr 35m', location: 'Bidadi', status: 'En Route', progress: 15, speed: 50, rpm: 1400, temp: 86, fuel: 90, tirePressure: { fl: 32, fr: 32, rl: 34, rr: 34 } },
+    { id: 'KS-890', route: 'Bengaluru - Mangaluru', type: 'Karnataka Sarige', category: 'Economy', eta: '5 hrs', location: 'Majestic Depot', status: 'Scheduled', progress: 0, speed: 0, rpm: 800, temp: 75, fuel: 100, tirePressure: { fl: 32, fr: 32, rl: 34, rr: 34 } }
   ]);
 
   const [parcels, setParcels] = useState([
@@ -457,6 +460,96 @@ export const SimulationProvider = ({ children }) => {
       history: [
         { time: '07:30 PM', msg: 'Cargo registered at Majestic Kiosk' }
       ]
+    },
+    {
+      id: 'RV-3310',
+      type: 'Sending',
+      status: 'In_Transit',
+      bus: 'KS-442',
+      pickupOtp: '8910',
+      deliveryOtp: '2304',
+      origin: 'Kempegowda Bus Station (Majestic), Bengaluru',
+      destination: 'Hubballi Central Stand',
+      senderName: 'You',
+      senderPhone: '9876543210',
+      receiverName: 'Ramesh Rao',
+      receiverPhone: '9900112233',
+      totalFare: 260,
+      insurance: false,
+      fragile: false,
+      rating: 0,
+      history: [
+        { time: 'Yesterday, 04:15 PM', msg: 'Cargo booked and received' },
+        { time: 'Yesterday, 05:00 PM', msg: 'Loaded on Sarige Bus KS-442' }
+      ]
+    },
+    {
+      id: 'RV-1209',
+      type: 'Receiving',
+      status: 'Pending',
+      bus: 'RJ-205',
+      pickupOtp: null,
+      deliveryOtp: '7611',
+      origin: 'Mandya KSRTC Bus Stand',
+      destination: 'Kempegowda Bus Station (Majestic), Bengaluru',
+      senderName: 'Kiran Patel',
+      senderPhone: '9844332211',
+      receiverName: 'You',
+      receiverPhone: '9876543210',
+      totalFare: 100,
+      insurance: true,
+      fragile: false,
+      rating: 0,
+      history: [
+        { time: 'Today, 03:00 PM', msg: 'Cargo registered at Mandya Stand Kiosk' }
+      ]
+    },
+    {
+      id: 'RV-8802',
+      type: 'Sending',
+      status: 'Delivered',
+      bus: 'AW-102',
+      pickupOtp: '1420',
+      deliveryOtp: '9021',
+      origin: 'Kempegowda Bus Station (Majestic), Bengaluru',
+      destination: 'Mysuru Central Bus Stand',
+      senderName: 'You',
+      senderPhone: '9876543210',
+      receiverName: 'Aditi Hegde',
+      receiverPhone: '9123456789',
+      totalFare: 140,
+      insurance: false,
+      fragile: false,
+      rating: 4,
+      history: [
+        { time: 'Today, 01:15 PM', msg: 'Cargo booked and loaded' },
+        { time: 'Today, 03:30 PM', msg: 'Arrived at Mysuru Terminal' },
+        { time: 'Today, 03:45 PM', msg: 'Delivered to recipient secure handover' }
+      ]
+    },
+    {
+      id: 'RV-7731',
+      type: 'Receiving',
+      status: 'Locker',
+      bus: 'AW-102',
+      pickupOtp: null,
+      deliveryOtp: '883011',
+      origin: 'Kempegowda Bus Station (Majestic), Bengaluru',
+      destination: 'Mysuru Central Bus Stand',
+      senderName: 'Nagesh K',
+      senderPhone: '9123456780',
+      receiverName: 'You',
+      receiverPhone: '9876543210',
+      totalFare: 140,
+      insurance: false,
+      fragile: false,
+      rating: 0,
+      history: [
+        { time: 'Today, 02:00 PM', msg: 'Cargo checked-in' },
+        { time: 'Today, 02:30 PM', msg: 'Loaded on Airavat Bus AW-102' },
+        { time: 'Today, 04:10 PM', msg: 'Arrived at Mysuru Terminal Kiosk' },
+        { time: 'Today, 04:15 PM', msg: 'Deposited into secure depot Locker LKR-M1' }
+      ]
     }
   ]);
 
@@ -498,7 +591,7 @@ export const SimulationProvider = ({ children }) => {
   const [lockers, setLockers] = useState([
     { id: 'LKR-A1', location: 'Kempegowda Bus Station (Majestic), Bengaluru', status: 'Empty', pin: '198421', parcelId: null },
     { id: 'LKR-A2', location: 'Kempegowda Bus Station (Majestic), Bengaluru', status: 'Empty', pin: '451029', parcelId: null },
-    { id: 'LKR-M1', location: 'Mysuru Central Bus Stand', status: 'Empty', pin: '883011', parcelId: null },
+    { id: 'LKR-M1', location: 'Mysuru Central Bus Stand', status: 'Occupied', pin: '883011', parcelId: 'RV-7731' },
     { id: 'LKR-M2', location: 'Mysuru Central Bus Stand', status: 'Empty', pin: '394102', parcelId: null },
     { id: 'LKR-N1', location: 'Mangaluru KSRTC Depot', status: 'Empty', pin: '745102', parcelId: null }
   ]);
