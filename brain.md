@@ -124,14 +124,11 @@ To safeguard the simulation sandbox against malicious inputs, the following secu
 
 ---
 
-## 6. Leaflet Map Coordinates
-Real-time coordinates are calculated using linear interpolation (`getRealRouteCoordinates(route, progress)`) mapping Karnataka geographic coords:
-- **Bengaluru Majestic**: `[12.97787, 77.57124]`
-- **Kengeri**: `[12.9177, 77.4839]`
-- **Mandya**: `[12.5222, 76.8970]`
-- **Mysuru**: `[12.3117, 76.6570]`
-- **Hassan**: `[13.0063, 76.1026]`
-- **Mangaluru**: `[12.8751, 74.8427]`
-- **Tumakuru**: `[13.3402, 77.1006]`
-- **Davanagere**: `[14.4644, 75.9218]`
-- **Hubballi**: `[15.3524, 75.1381]`
+## 6. Leaflet Map Coordinates & Highways
+Real-time coordinates are calculated using high-fidelity multi-point linear interpolation (`getRealRouteCoordinates(route, progress)`) to track buses along actual National Highway routes:
+
+*   **NH-275 (Mysuru Route)**: Bengaluru Majestic (`[12.97787, 77.57124]`) → Kengeri (`[12.9177, 77.4839]`) → Bidadi (`[12.7226, 77.3874]`) → Ramanagara (`[12.7214, 77.2801]`) → Channapatna (`[12.6518, 77.2006]`) → Maddur (`[12.5843, 77.0450]`) → Mandya (`[12.5222, 76.8970]`) → Srirangapatna (`[12.4221, 76.6953]`) → Mysuru (`[12.3117, 76.6570]`)
+*   **NH-75 (Mangaluru Route)**: Bengaluru Majestic → Kunigal (`[13.0232, 77.0298]`) → Channarayapatna (`[12.9009, 76.3898]`) → Hassan (`[13.0063, 76.1026]`) → Sakleshpur (`[12.9427, 75.7865]`) → Gundya (`[12.8338, 75.5684]`) → Uppinangady (`[12.8398, 75.2530]`) → Bantwal (`[12.8988, 75.0392]`) → Mangaluru (`[12.8751, 74.8427]`)
+*   **NH-48 (Hubballi Route)**: Bengaluru Majestic → Tumakuru (`[13.3402, 77.1006]`) → Sira (`[13.7431, 76.9056]`) → Hiriyur (`[13.9439, 76.6186]`) → Chitradurga (`[14.2251, 76.4006]`) → Davanagere (`[14.4644, 75.9218]`) → Harihar (`[14.5098, 75.8034]`) → Ranebennur (`[14.6231, 75.6212]`) → Haveri (`[14.7958, 75.3998]`) → Hubballi (`[15.3524, 75.1381]`)
+*   **NH-69 (Shivamogga Route)**: Bengaluru Majestic → Tumakuru → Gubbi (`[13.3101, 76.9402]`) → Tiptur (`[13.2638, 76.4784]`) → Arsikere (`[13.3151, 76.2570]`) → Kadur (`[13.5532, 76.0123]`) → Birur (`[13.5938, 75.9784]`) → Tarikere (`[13.7118, 75.8142]`) → Shivamogga (`[13.9299, 75.5681]`)
+*   **NH-48 (Belagavi Route Extension)**: Bengaluru Majestic → Tumakuru → Davanagere → Hubballi → Dharwad (`[15.4589, 75.0078]`) → Kittur (`[15.5984, 74.7890]`) → Belagavi (`[15.8497, 74.4977]`)

@@ -290,21 +290,60 @@ export const getRealRouteStops = (route) => {
     return [
       { name: 'Bengaluru Majestic', lat: 12.97787, lng: 77.57124 },
       { name: 'Kengeri Hub', lat: 12.9177, lng: 77.4839 },
+      { name: 'Bidadi', lat: 12.7226, lng: 77.3874 },
+      { name: 'Ramanagara', lat: 12.7214, lng: 77.2801 },
+      { name: 'Channapatna', lat: 12.6518, lng: 77.2006 },
+      { name: 'Maddur', lat: 12.5843, lng: 77.0450 },
       { name: 'Mandya Stand', lat: 12.5222, lng: 76.8970 },
+      { name: 'Srirangapatna', lat: 12.4221, lng: 76.6953 },
       { name: 'Mysuru Stand', lat: 12.3117, lng: 76.6570 }
     ];
   } else if (route.includes('Mangaluru') || route.includes('Mangalore')) {
     return [
       { name: 'Bengaluru Majestic', lat: 12.97787, lng: 77.57124 },
+      { name: 'Kunigal', lat: 13.0232, lng: 77.0298 },
+      { name: 'Channarayapatna', lat: 12.9009, lng: 76.3898 },
       { name: 'Hassan Depot', lat: 13.0063, lng: 76.1026 },
+      { name: 'Sakleshpur', lat: 12.9427, lng: 75.7865 },
+      { name: 'Gundya', lat: 12.8338, lng: 75.5684 },
+      { name: 'Uppinangady', lat: 12.8398, lng: 75.2530 },
+      { name: 'Bantwal', lat: 12.8988, lng: 75.0392 },
       { name: 'Mangaluru Depot', lat: 12.8751, lng: 74.8427 }
     ];
   } else if (route.includes('Hubli') || route.includes('Hubballi')) {
     return [
       { name: 'Bengaluru Majestic', lat: 12.97787, lng: 77.57124 },
       { name: 'Tumakuru Stand', lat: 13.3402, lng: 77.1006 },
+      { name: 'Sira', lat: 13.7431, lng: 76.9056 },
+      { name: 'Hiriyur', lat: 13.9439, lng: 76.6186 },
+      { name: 'Chitradurga', lat: 14.2251, lng: 76.4006 },
       { name: 'Davanagere Depot', lat: 14.4644, lng: 75.9218 },
+      { name: 'Harihar', lat: 14.5098, lng: 75.8034 },
+      { name: 'Ranebennur', lat: 14.6231, lng: 75.6212 },
+      { name: 'Haveri', lat: 14.7958, lng: 75.3998 },
       { name: 'Hubballi Stand', lat: 15.3524, lng: 75.1381 }
+    ];
+  } else if (route.includes('Shivamogga')) {
+    return [
+      { name: 'Bengaluru Majestic', lat: 12.97787, lng: 77.57124 },
+      { name: 'Tumakuru Stand', lat: 13.3402, lng: 77.1006 },
+      { name: 'Gubbi', lat: 13.3101, lng: 76.9402 },
+      { name: 'Tiptur', lat: 13.2638, lng: 76.4784 },
+      { name: 'Arsikere', lat: 13.3151, lng: 76.2570 },
+      { name: 'Kadur', lat: 13.5532, lng: 76.0123 },
+      { name: 'Birur', lat: 13.5938, lng: 75.9784 },
+      { name: 'Tarikere', lat: 13.7118, lng: 75.8142 },
+      { name: 'Shivamogga Stand', lat: 13.9299, lng: 75.5681 }
+    ];
+  } else if (route.includes('Belagavi')) {
+    return [
+      { name: 'Bengaluru Majestic', lat: 12.97787, lng: 77.57124 },
+      { name: 'Tumakuru Stand', lat: 13.3402, lng: 77.1006 },
+      { name: 'Davanagere Depot', lat: 14.4644, lng: 75.9218 },
+      { name: 'Hubballi Stand', lat: 15.3524, lng: 75.1381 },
+      { name: 'Dharwad', lat: 15.4589, lng: 75.0078 },
+      { name: 'Kittur', lat: 15.5984, lng: 74.7890 },
+      { name: 'Belagavi Depot', lat: 15.8497, lng: 74.4977 }
     ];
   } else {
     return [
