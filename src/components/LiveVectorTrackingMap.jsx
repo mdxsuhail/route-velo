@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { ZoomIn, ZoomOut, Maximize, Navigation, Layers } from 'lucide-react';
 import { useSimulation, playSound, getRealRouteStops, getRealRouteCoordinates } from '../context/SimulationContext';
 
 // Customer Leaflet Map Component (Leaflet GPS integration for tracking)
 const CustomerLeafletMap = ({ bus, routeStops }) => {
   const mapRef = useRef(null);
+  const tileLayerRef = useRef(null);
   const busMarkerRef = useRef(null);
   const stopMarkersRef = useRef([]);
   const polylineRef = useRef(null);
+
+  const [activeLayer, setActiveLayer] = useState('dark');
 
   useEffect(() => {
     const startCoord = routeStops[0] ? [routeStops[0].lat, routeStops[0].lng] : [12.97787, 77.57124];
@@ -18,10 +22,11 @@ const CustomerLeafletMap = ({ bus, routeStops }) => {
       attributionControl: false
     }).setView(startCoord, 8);
 
-    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    const tileLayer = window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       maxZoom: 19
     }).addTo(map);
 
+    tileLayerRef.current = tileLayer;
     mapRef.current = map;
 
     // Draw route polyline
@@ -64,6 +69,20 @@ const CustomerLeafletMap = ({ bus, routeStops }) => {
     };
   }, [routeStops]);
 
+  // Update Tile Layer dynamically when activeLayer state changes
+  useEffect(() => {
+    if (!tileLayerRef.current || !window.L) return;
+    
+    let url = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    if (activeLayer === 'light') {
+      url = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+    } else if (activeLayer === 'osm') {
+      url = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    }
+    
+    tileLayerRef.current.setUrl(url);
+  }, [activeLayer]);
+
   // Update bus marker dynamically
   useEffect(() => {
     const map = mapRef.current;
@@ -77,30 +96,41 @@ const CustomerLeafletMap = ({ bus, routeStops }) => {
     const shadowGlow = isOverheated ? 'var(--error-glow)' : isDelayed ? 'var(--accent-glow)' : 'var(--primary-glow)';
 
     const iconHtml = `
-      <div class="animate-pulse" style="
-        background: ${color};
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        border: 2px solid white;
-        box-shadow: 0 0 10px ${shadowGlow};
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 8px;
-        font-weight: 800;
-        color: white;
-        font-family: inherit;
-      ">
-        🚌
+      <div style="position: relative; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+        <div class="animate-ping" style="
+          position: absolute;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: ${color};
+          opacity: 0.35;
+        "></div>
+        <div style="
+          background: ${color};
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          border: 2px solid white;
+          box-shadow: 0 0 10px ${shadowGlow};
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 8px;
+          font-weight: 800;
+          color: white;
+          z-index: 10;
+          font-family: inherit;
+        ">
+          🚌
+        </div>
       </div>
     `;
 
     const busIcon = window.L.divIcon({
       html: iconHtml,
       className: 'leaflet-customer-bus-marker',
-      iconSize: [28, 28],
-      iconAnchor: [14, 14]
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
     });
 
     if (busMarkerRef.current) {
@@ -122,19 +152,103 @@ const CustomerLeafletMap = ({ bus, routeStops }) => {
     map.panTo([lat, lng]);
   }, [bus, bus?.progress]);
 
+  const handleZoom = (type) => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (type === 'in') map.zoomIn();
+    else if (type === 'out') map.zoomOut();
+    else {
+      if (polylineRef.current) {
+        try {
+          map.fitBounds(polylineRef.current.getBounds(), { padding: [30, 30] });
+        } catch (e) {}
+      }
+    }
+  };
+
+  const recenterOnBus = () => {
+    const map = mapRef.current;
+    if (!map || !bus) return;
+    playSound('click');
+    const { lat, lng } = getRealRouteCoordinates(bus.route, bus.progress);
+    map.setView([lat, lng], 11, { animate: true });
+  };
+
   return (
-    <div 
-      id="customer-leaflet-tracking-map" 
-      style={{ 
-        height: 220, 
-        width: '100%', 
-        borderRadius: 12, 
-        background: '#070a13',
-        border: '1px solid var(--glass-border)',
-        position: 'relative',
-        zIndex: 1
-      }} 
-    />
+    <div style={{ position: 'relative', width: '100%', borderRadius: 12, overflow: 'hidden' }}>
+      
+      {/* Floating Layer switcher */}
+      <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
+        <div className="glass flex" style={{ padding: 4, borderRadius: 8, gap: 2 }}>
+          {[
+            { id: 'dark', label: 'Dark' },
+            { id: 'light', label: 'Light' },
+            { id: 'osm', label: 'OSM' }
+          ].map(layer => (
+            <button
+              key={layer.id}
+              onClick={() => setActiveLayer(layer.id)}
+              style={{
+                fontSize: '0.62rem',
+                padding: '4px 8px',
+                borderRadius: 4,
+                border: 'none',
+                cursor: 'pointer',
+                background: activeLayer === layer.id ? 'var(--primary)' : 'transparent',
+                color: activeLayer === layer.id ? 'white' : 'var(--text-muted)',
+                fontWeight: 800
+              }}
+            >
+              {layer.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Floating Zoom & Navigation controls */}
+      <div style={{ position: 'absolute', bottom: 10, right: 10, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <button 
+          onClick={recenterOnBus} 
+          className="glass flex items-center justify-center" 
+          title="Recenter on Bus"
+          style={{ width: 28, height: 28, borderRadius: 6, border: 'none', cursor: 'pointer', color: 'white' }}
+        >
+          <Navigation size={12} fill="white" />
+        </button>
+        <button 
+          onClick={() => handleZoom('in')} 
+          className="glass flex items-center justify-center" 
+          style={{ width: 28, height: 28, borderRadius: 6, border: 'none', cursor: 'pointer', color: 'white' }}
+        >
+          <ZoomIn size={14} />
+        </button>
+        <button 
+          onClick={() => handleZoom('out')} 
+          className="glass flex items-center justify-center" 
+          style={{ width: 28, height: 28, borderRadius: 6, border: 'none', cursor: 'pointer', color: 'white' }}
+        >
+          <ZoomOut size={14} />
+        </button>
+        <button 
+          onClick={() => handleZoom('fit')} 
+          className="glass flex items-center justify-center" 
+          style={{ width: 28, height: 28, borderRadius: 6, border: 'none', cursor: 'pointer', color: 'white' }}
+        >
+          <Maximize size={12} />
+        </button>
+      </div>
+
+      <div 
+        id="customer-leaflet-tracking-map" 
+        style={{ 
+          height: 220, 
+          width: '100%', 
+          background: '#070a13',
+          border: '1px solid var(--glass-border)',
+          zIndex: 1
+        }} 
+      />
+    </div>
   );
 };
 
