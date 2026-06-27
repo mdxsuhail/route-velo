@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ZoomIn, ZoomOut, Maximize, Navigation, Layers } from 'lucide-react';
-import { useSimulation, playSound, getRealRouteStops, getRealRouteCoordinates } from '../context/SimulationContext';
+import { useSimulation, playSound, getRealRouteStops, getRealRouteCoordinates, getRealRouteHighwayPath } from '../context/SimulationContext';
 
 // Customer Leaflet Map Component (Leaflet GPS integration for tracking)
-const CustomerLeafletMap = ({ bus, routeStops }) => {
+const CustomerLeafletMap = ({ bus, routeStops, highwayCoords }) => {
   const mapRef = useRef(null);
   const tileLayerRef = useRef(null);
   const busMarkerRef = useRef(null);
@@ -29,8 +29,8 @@ const CustomerLeafletMap = ({ bus, routeStops }) => {
     tileLayerRef.current = tileLayer;
     mapRef.current = map;
 
-    // Draw route polyline
-    const pathCoords = routeStops.map(s => [s.lat, s.lng]);
+    // Draw route polyline using high-density highway waypoints
+    const pathCoords = highwayCoords.map(s => [s.lat, s.lng]);
     const poly = window.L.polyline(pathCoords, {
       color: 'var(--primary)',
       weight: 4,
@@ -370,6 +370,7 @@ export default function LiveVectorTrackingMap({ parcel }) {
         <CustomerLeafletMap 
           bus={bus} 
           routeStops={getRealRouteStops(bus ? bus.route : (parcel.destination.includes('Mysuru') ? 'Bengaluru - Mysuru' : parcel.destination.includes('Mangaluru') ? 'Bengaluru - Mangaluru' : 'Bengaluru - Hubli'))} 
+          highwayCoords={getRealRouteHighwayPath(bus ? bus.route : (parcel.destination.includes('Mysuru') ? 'Bengaluru - Mysuru' : parcel.destination.includes('Mangaluru') ? 'Bengaluru - Mangaluru' : 'Bengaluru - Hubli'))}
         />
       </div>
 

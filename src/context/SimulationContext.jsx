@@ -290,49 +290,26 @@ export const getRealRouteStops = (route) => {
     return [
       { name: 'Bengaluru Majestic', lat: 12.97787, lng: 77.57124 },
       { name: 'Kengeri Hub', lat: 12.9177, lng: 77.4839 },
-      { name: 'Bidadi', lat: 12.7226, lng: 77.3874 },
-      { name: 'Ramanagara', lat: 12.7214, lng: 77.2801 },
-      { name: 'Channapatna', lat: 12.6518, lng: 77.2006 },
-      { name: 'Maddur', lat: 12.5843, lng: 77.0450 },
       { name: 'Mandya Stand', lat: 12.5222, lng: 76.8970 },
-      { name: 'Srirangapatna', lat: 12.4221, lng: 76.6953 },
       { name: 'Mysuru Stand', lat: 12.3117, lng: 76.6570 }
     ];
   } else if (route.includes('Mangaluru') || route.includes('Mangalore')) {
     return [
       { name: 'Bengaluru Majestic', lat: 12.97787, lng: 77.57124 },
-      { name: 'Kunigal', lat: 13.0232, lng: 77.0298 },
-      { name: 'Channarayapatna', lat: 12.9009, lng: 76.3898 },
       { name: 'Hassan Depot', lat: 13.0063, lng: 76.1026 },
-      { name: 'Sakleshpur', lat: 12.9427, lng: 75.7865 },
-      { name: 'Gundya', lat: 12.8338, lng: 75.5684 },
-      { name: 'Uppinangady', lat: 12.8398, lng: 75.2530 },
-      { name: 'Bantwal', lat: 12.8988, lng: 75.0392 },
       { name: 'Mangaluru Depot', lat: 12.8751, lng: 74.8427 }
     ];
   } else if (route.includes('Hubli') || route.includes('Hubballi')) {
     return [
       { name: 'Bengaluru Majestic', lat: 12.97787, lng: 77.57124 },
       { name: 'Tumakuru Stand', lat: 13.3402, lng: 77.1006 },
-      { name: 'Sira', lat: 13.7431, lng: 76.9056 },
-      { name: 'Hiriyur', lat: 13.9439, lng: 76.6186 },
-      { name: 'Chitradurga', lat: 14.2251, lng: 76.4006 },
       { name: 'Davanagere Depot', lat: 14.4644, lng: 75.9218 },
-      { name: 'Harihar', lat: 14.5098, lng: 75.8034 },
-      { name: 'Ranebennur', lat: 14.6231, lng: 75.6212 },
-      { name: 'Haveri', lat: 14.7958, lng: 75.3998 },
       { name: 'Hubballi Stand', lat: 15.3524, lng: 75.1381 }
     ];
   } else if (route.includes('Shivamogga')) {
     return [
       { name: 'Bengaluru Majestic', lat: 12.97787, lng: 77.57124 },
       { name: 'Tumakuru Stand', lat: 13.3402, lng: 77.1006 },
-      { name: 'Gubbi', lat: 13.3101, lng: 76.9402 },
-      { name: 'Tiptur', lat: 13.2638, lng: 76.4784 },
-      { name: 'Arsikere', lat: 13.3151, lng: 76.2570 },
-      { name: 'Kadur', lat: 13.5532, lng: 76.0123 },
-      { name: 'Birur', lat: 13.5938, lng: 75.9784 },
-      { name: 'Tarikere', lat: 13.7118, lng: 75.8142 },
       { name: 'Shivamogga Stand', lat: 13.9299, lng: 75.5681 }
     ];
   } else if (route.includes('Belagavi')) {
@@ -341,8 +318,6 @@ export const getRealRouteStops = (route) => {
       { name: 'Tumakuru Stand', lat: 13.3402, lng: 77.1006 },
       { name: 'Davanagere Depot', lat: 14.4644, lng: 75.9218 },
       { name: 'Hubballi Stand', lat: 15.3524, lng: 75.1381 },
-      { name: 'Dharwad', lat: 15.4589, lng: 75.0078 },
-      { name: 'Kittur', lat: 15.5984, lng: 74.7890 },
       { name: 'Belagavi Depot', lat: 15.8497, lng: 74.4977 }
     ];
   } else {
@@ -354,20 +329,135 @@ export const getRealRouteStops = (route) => {
   }
 };
 
+// High-fidelity highway curvature paths following actual roads (NH-275, NH-75, NH-48, NH-69)
+export const getRealRouteHighwayPath = (route) => {
+  if (route.includes('Mysuru') || route.includes('Mysore')) {
+    return [
+      { lat: 12.97787, lng: 77.57124 }, // Majestic
+      { lat: 12.9555, lng: 77.5350 },  // Nayandahalli
+      { lat: 12.9177, lng: 77.4839 },  // Kengeri
+      { lat: 12.8720, lng: 77.4560 },  // Kumbalgodu
+      { lat: 12.8250, lng: 77.4280 },  // Bidadi Toll
+      { lat: 12.7226, lng: 77.3874 },  // Bidadi
+      { lat: 12.7150, lng: 77.3100 },  // Ramanagara Entry
+      { lat: 12.7214, lng: 77.2801 },  // Ramanagara
+      { lat: 12.6800, lng: 77.2400 },  // Ramanagara Exit
+      { lat: 12.6518, lng: 77.2006 },  // Channapatna
+      { lat: 12.6100, lng: 77.1200 },  // Nidaghatta
+      { lat: 12.5843, lng: 77.0450 },  // Maddur
+      { lat: 12.5500, lng: 76.9600 },  // Gejjalagere
+      { lat: 12.5222, lng: 76.8970 },  // Mandya
+      { lat: 12.4850, lng: 76.8100 },  // Induvalu
+      { lat: 12.4550, lng: 76.7350 },  // Baburayanakoppal
+      { lat: 12.4221, lng: 76.6953 },  // Srirangapatna
+      { lat: 12.3800, lng: 76.6750 },  // Siddalingapura
+      { lat: 12.3117, lng: 76.6570 }   // Mysuru
+    ];
+  } else if (route.includes('Mangaluru') || route.includes('Mangalore')) {
+    return [
+      { lat: 12.97787, lng: 77.57124 }, // Majestic
+      { lat: 13.0300, lng: 77.5300 },  // Yeshwanthpur
+      { lat: 13.0500, lng: 77.4800 },  // Jalahalli
+      { lat: 13.0950, lng: 77.3900 },  // Nelamangala Toll
+      { lat: 13.0500, lng: 77.2500 },  // Solur
+      { lat: 13.0232, lng: 77.0298 },  // Kunigal
+      { lat: 12.9800, lng: 76.8500 },  // Yediyur
+      { lat: 12.9450, lng: 76.6500 },  // Bellur Cross
+      { lat: 12.9009, lng: 76.3898 },  // Channarayapatna
+      { lat: 12.9600, lng: 76.2200 },  // Shantigrama
+      { lat: 13.0063, lng: 76.1026 },  // Hassan
+      { lat: 12.9850, lng: 75.9200 },  // Alur
+      { lat: 12.9427, lng: 75.7865 },  // Sakleshpur
+      { lat: 12.9000, lng: 75.7400 },  // Shiradi Ghats Start
+      { lat: 12.8750, lng: 75.7000 },
+      { lat: 12.8450, lng: 75.6400 },
+      { lat: 12.8338, lng: 75.5684 },  // Gundya
+      { lat: 12.8450, lng: 75.4500 },  // Shiradi
+      { lat: 12.8650, lng: 75.3500 },  // Nelyadi
+      { lat: 12.8398, lng: 75.2530 },  // Uppinangady
+      { lat: 12.8750, lng: 75.1200 },  // Mani
+      { lat: 12.8988, lng: 75.0392 },  // Bantwal
+      { lat: 12.9050, lng: 74.9200 },  // Farangipete
+      { lat: 12.8751, lng: 74.8427 }   // Mangaluru
+    ];
+  } else if (route.includes('Hubli') || route.includes('Hubballi')) {
+    return [
+      { lat: 12.97787, lng: 77.57124 }, // Majestic
+      { lat: 13.0300, lng: 77.5300 },  // Yeshwanthpur
+      { lat: 13.0950, lng: 77.3900 },  // Nelamangala
+      { lat: 13.2300, lng: 77.2200 },  // Dobbaspet
+      { lat: 13.2800, lng: 77.1600 },  // Kyatsandra
+      { lat: 13.3402, lng: 77.1006 },  // Tumakuru
+      { lat: 13.5200, lng: 77.0100 },  // Oorukere
+      { lat: 13.7431, lng: 76.9056 },  // Sira
+      { lat: 13.8800, lng: 76.7800 },  // Tawarekere
+      { lat: 13.9439, lng: 76.6186 },  // Hiriyur
+      { lat: 14.1200, lng: 76.4800 },  // Babbur
+      { lat: 14.2251, lng: 76.4006 },  // Chitradurga
+      { lat: 14.3300, lng: 76.2200 },  // Holalkere Cross
+      { lat: 14.4644, lng: 75.9218 },  // Davanagere
+      { lat: 14.5098, lng: 75.8034 },  // Harihar
+      { lat: 14.5700, lng: 75.7200 },  // Malebennur
+      { lat: 14.6231, lng: 75.6212 },  // Ranebennur
+      { lat: 14.7200, lng: 75.5200 },  // Motebennur
+      { lat: 14.7958, lng: 75.3998 },  // Haveri
+      { lat: 15.0200, lng: 75.2500 },  // Shiggaon
+      { lat: 15.1800, lng: 75.1800 },  // Tada
+      { lat: 15.3524, lng: 75.1381 }   // Hubballi
+    ];
+  } else if (route.includes('Shivamogga')) {
+    return [
+      { lat: 12.97787, lng: 77.57124 }, // Majestic
+      { lat: 13.3402, lng: 77.1006 },  // Tumakuru
+      { lat: 13.3101, lng: 76.9402 },  // Gubbi
+      { lat: 13.2850, lng: 76.7500 },  // Nittur
+      { lat: 13.2750, lng: 76.6000 },  // Kibbanahalli Cross
+      { lat: 13.2638, lng: 76.4784 },  // Tiptur
+      { lat: 13.2800, lng: 76.3800 },  // Banasandra
+      { lat: 13.3151, lng: 76.2570 },  // Arsikere
+      { lat: 13.4300, lng: 76.1200 },  // Banavara
+      { lat: 13.5532, lng: 76.0123 },  // Kadur
+      { lat: 13.5938, lng: 75.9784 },  // Birur
+      { lat: 13.6500, lng: 75.9200 },  // Birur Exit
+      { lat: 13.7118, lng: 75.8142 },  // Tarikere
+      { lat: 13.8200, lng: 75.7000 },  // Bhadravathi
+      { lat: 13.9299, lng: 75.5681 }   // Shivamogga
+    ];
+  } else if (route.includes('Belagavi')) {
+    return [
+      { lat: 12.97787, lng: 77.57124 },
+      { lat: 13.3402, lng: 77.1006 },
+      { lat: 14.4644, lng: 75.9218 },
+      { lat: 15.3524, lng: 75.1381 },  // Hubballi
+      { lat: 15.4589, lng: 75.0078 },  // Dharwad
+      { lat: 15.5400, lng: 74.8800 },  // Tegur
+      { lat: 15.5984, lng: 74.7890 },  // Kittur
+      { lat: 15.6800, lng: 74.6800 },  // Hire Bagewadi
+      { lat: 15.8497, lng: 74.4977 }   // Belagavi
+    ];
+  } else {
+    return [
+      { lat: 12.97787, lng: 77.57124 },
+      { lat: 13.3402, lng: 77.1006 },
+      { lat: 14.4644, lng: 75.9218 }
+    ];
+  }
+};
+
 export const getRealRouteCoordinates = (route, progress) => {
-  const stops = getRealRouteStops(route);
-  const segmentCount = stops.length - 1;
+  const path = getRealRouteHighwayPath(route);
+  const segmentCount = path.length - 1;
   const progressPerSegment = 100 / segmentCount;
   const segmentIdx = Math.min(Math.floor(progress / progressPerSegment), segmentCount - 1);
   const segmentProgress = (progress % progressPerSegment) / progressPerSegment;
   
-  const start = stops[segmentIdx];
-  const end = stops[segmentIdx + 1];
+  const start = path[segmentIdx];
+  const end = path[segmentIdx + 1];
   
   const lat = start.lat + (end.lat - start.lat) * segmentProgress;
   const lng = start.lng + (end.lng - start.lng) * segmentProgress;
   
-  return { lat, lng, stops };
+  return { lat, lng, stops: getRealRouteStops(route) };
 };
 
 const SimulationContext = createContext(null);

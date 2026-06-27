@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Layers, ZoomIn, ZoomOut, Maximize, Navigation, Search } from 'lucide-react';
-import { useSimulation, getRealRouteCoordinates } from '../context/SimulationContext';
+import { useSimulation, getRealRouteCoordinates, getRealRouteHighwayPath } from '../context/SimulationContext';
 
 export default function AdminFleetMap() {
   const { buses } = useSimulation();
@@ -29,86 +29,19 @@ export default function AdminFleetMap() {
     tileLayerRef.current = tileLayer;
     mapRef.current = map;
 
-    // Draw NH route polylines
+    // Draw NH route polylines dynamically using high-density highway waypoints
     const routesToDraw = [
-      {
-        name: 'Mysuru',
-        color: 'var(--primary)',
-        coords: [
-          [12.97787, 77.57124], // Majestic
-          [12.9177, 77.4839],  // Kengeri
-          [12.7226, 77.3874],  // Bidadi
-          [12.7214, 77.2801],  // Ramanagara
-          [12.6518, 77.2006],  // Channapatna
-          [12.5843, 77.0450],  // Maddur
-          [12.5222, 76.8970],  // Mandya
-          [12.4221, 76.6953],  // Srirangapatna
-          [12.3117, 76.6570]   // Mysuru
-        ]
-      },
-      {
-        name: 'Mangaluru',
-        color: 'var(--accent)',
-        coords: [
-          [12.97787, 77.57124], // Majestic
-          [13.0232, 77.0298],  // Kunigal
-          [12.9009, 76.3898],  // Channarayapatna
-          [13.0063, 76.1026],  // Hassan
-          [12.9427, 75.7865],  // Sakleshpur
-          [12.8338, 75.5684],  // Gundya
-          [12.8398, 75.2530],  // Uppinangady
-          [12.8988, 75.0392],  // Bantwal
-          [12.8751, 74.8427]   // Mangaluru
-        ]
-      },
-      {
-        name: 'Hubli',
-        color: 'var(--success)',
-        coords: [
-          [12.97787, 77.57124], // Majestic
-          [13.3402, 77.1006],  // Tumakuru
-          [13.7431, 76.9056],  // Sira
-          [13.9439, 76.6186],  // Hiriyur
-          [14.2251, 76.4006],  // Chitradurga
-          [14.4644, 75.9218],  // Davanagere
-          [14.5098, 75.8034],  // Harihar
-          [14.6231, 75.6212],  // Ranebennur
-          [14.7958, 75.3998],  // Haveri
-          [15.3524, 75.1381]   // Hubballi
-        ]
-      },
-      {
-        name: 'Shivamogga',
-        color: '#38bdf8', // sky-400
-        coords: [
-          [12.97787, 77.57124], // Majestic
-          [13.3402, 77.1006],  // Tumakuru
-          [13.3101, 76.9402],  // Gubbi
-          [13.2638, 76.4784],  // Tiptur
-          [13.3151, 76.2570],  // Arsikere
-          [13.5532, 76.0123],  // Kadur
-          [13.5938, 75.9784],  // Birur
-          [13.7118, 75.8142],  // Tarikere
-          [13.9299, 75.5681]   // Shivamogga
-        ]
-      },
-      {
-        name: 'Belagavi',
-        color: '#e879f9', // fuchsia-400
-        coords: [
-          [12.97787, 77.57124], // Majestic
-          [13.3402, 77.1006],  // Tumakuru
-          [14.4644, 75.9218],  // Davanagere
-          [15.3524, 75.1381],  // Hubballi
-          [15.4589, 75.0078],  // Dharwad
-          [15.5984, 74.7890],  // Kittur
-          [15.8497, 74.4977]   // Belagavi
-        ]
-      }
+      { name: 'Mysuru', color: 'var(--primary)' },
+      { name: 'Mangaluru', color: 'var(--accent)' },
+      { name: 'Hubli', color: 'var(--success)' },
+      { name: 'Shivamogga', color: '#38bdf8' },
+      { name: 'Belagavi', color: '#e879f9' }
     ];
 
     routesToDraw.forEach(r => {
-      const poly = window.L.polyline(r.coords, {
+      const highwayPoints = getRealRouteHighwayPath(r.name);
+      const coords = highwayPoints.map(p => [p.lat, p.lng]);
+      const poly = window.L.polyline(coords, {
         color: r.color,
         weight: 3.5,
         opacity: 0.5,
