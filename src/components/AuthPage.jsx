@@ -7,8 +7,19 @@ export default function AuthPage() {
     appLanguage,
     setCurrentUser,
     setToast,
-    addLog
+    addLog,
+    buses,
+    setDriverBusId
   } = useSimulation();
+
+  const [selectedBusId, setSelectedBusId] = useState('');
+
+  // Set default selected bus once buses load
+  React.useEffect(() => {
+    if (buses && buses.length > 0 && !selectedBusId) {
+      setSelectedBusId(buses[0].id);
+    }
+  }, [buses]);
 
   const [selectedRole, setSelectedRole] = useState('Customer'); // Customer, Driver, Admin
   const [loginStep, setLoginStep] = useState('phone'); // phone, otp
@@ -81,10 +92,12 @@ export default function AuthPage() {
       alert('Please enter your Driver/Conductor Badge ID.');
       return;
     }
+    const busId = selectedBusId || (buses[0]?.id || 'AW-102');
     playSound('chime');
+    setDriverBusId(busId);
     setCurrentUser('Driver');
-    addLog(`AUTH: Conductor ${driverBadge} checked in.`);
-    setToast({ title: 'Shift Started', message: `Driver Badge ${driverBadge} active.` });
+    addLog(`AUTH: Conductor ${driverBadge} checked in. Assigned to Bus ${busId}.`);
+    setToast({ title: 'Shift Started', message: `Driver Badge ${driverBadge} active on Bus ${busId}.` });
     speakText("Shift session initialized", appLanguage);
   };
 
@@ -223,15 +236,28 @@ export default function AuthPage() {
                 placeholder="e.g. DRV-9932"
                 value={driverBadge}
                 onChange={e => setDriverBadge(e.target.value)}
+                required
               />
             </div>
+            <div className="input-group">
+              <label className="input-label">Assigned KSRTC Bus ID</label>
+              <select
+                value={selectedBusId}
+                onChange={e => { playSound('click'); setSelectedBusId(e.target.value); }}
+                style={{ width: '100%', height: 38, fontSize: '0.8rem', padding: '8px 10px' }}
+              >
+                {buses.map(b => (
+                  <option key={b.id} value={b.id}>{b.id} ({b.type} - {b.route})</option>
+                ))}
+              </select>
+            </div>
             <button type="submit" className="btn btn-primary w-full">
-              Verify Badge
+              Verify Badge & Start Shift
             </button>
             <div className="sim-info-box">
               <span style={{ fontSize: '1.2rem' }}>ℹ️</span>
               <div>
-                Enter badge ID (e.g. <strong>DRV-9932</strong>) to start a shift manifest simulation.
+                Select your assigned bus and enter your badge to load the specific route manifest.
               </div>
             </div>
           </form>

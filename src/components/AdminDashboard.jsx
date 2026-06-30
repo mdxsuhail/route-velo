@@ -13,8 +13,11 @@ export default function AdminDashboard() {
     bypassEvidenceList,
     incidentLogs,
     addLog,
-    t
+    t,
+    stopsList, setStopsList
   } = useSimulation();
+
+  const [destMode, setDestMode] = React.useState('select'); // 'select' or 'custom'
 
   // Analytics calculations
   const totalRevenue = parcels.reduce((sum, p) => sum + p.totalFare, 0) + 142500;
@@ -96,13 +99,31 @@ export default function AdminDashboard() {
       </div>
 
       {/* Admin Custom Fleet Bus Dispatcher Form */}
-      <h4 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 8 }}>Dispatch Custom Fleet Bus</h4>
+      <h4 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 8 }}>Schedule & Dispatch Bus Ride</h4>
       <div className="card" style={{ padding: 16, marginBottom: 16 }}>
          <form onSubmit={(e) => {
            e.preventDefault();
            const busId = sanitizeInput(e.target.busId.value.trim().toUpperCase(), 15);
            const busType = e.target.busType.value;
-           const route = e.target.route.value;
+           const driverName = sanitizeInput(e.target.driverName.value.trim(), 50) || 'Chennappa G.';
+           const depTime = sanitizeInput(e.target.depTime.value.trim(), 20) || '10:30 AM';
+           
+           let destination = '';
+           if (destMode === 'custom') {
+             destination = sanitizeInput(e.target.customDest.value.trim(), 100);
+             if (!destination) {
+               alert('Please enter a custom destination name');
+               return;
+             }
+             // Add to stopsList if not already present
+             if (!stopsList.includes(destination)) {
+               setStopsList(prev => [...prev, destination]);
+               addLog(`ADMIN: Added new destination kiosk ${destination} to stops database.`);
+             }
+           } else {
+             destination = e.target.selectDest.value;
+           }
+           
            if (!busId) {
              alert('Please enter a Bus ID');
              return;
@@ -116,49 +137,94 @@ export default function AdminDashboard() {
            if (busType.includes('Sarige')) category = 'Economy';
            else if (busType.includes('Rajahamsa')) category = 'Standard';
            
+           // Generate clean route name (e.g. Bengaluru - Mysuru)
+           const destCity = destination.replace(' KSRTC Bus Stand', '').replace(' Central Bus Stand', '').replace(' Bus Depot', '').replace(' Transit Hub', '');
+           const route = `Bengaluru - ${destCity}`;
+           
            const newBus = {
              id: busId,
              route,
              type: busType,
              category,
-             eta: 'Scheduled',
-             location: route.split('-')[0].trim(),
-             status: 'En Route',
+             eta: `Departs at ${depTime}`,
+             location: 'Kempegowda Bus Station (Majestic), Bengaluru',
+             status: 'Scheduled',
              progress: 0,
-             speed: 55,
-             rpm: 1500,
-             temp: 85,
+             speed: 0,
+             rpm: 800,
+             temp: 75,
              fuel: 100,
+             driverName,
+             depTime,
              tirePressure: { fl: 35, fr: 35, rl: 36, rr: 36 }
            };
            
            playSound('chime');
            setBuses(prev => [...prev, newBus]);
-           addLog(`ADMIN: Dispatched new custom bus ${busId} (${busType}) on route ${route}.`);
-            const text = appLanguage === 'Kannada'
-              ? `ಹೊಸ ಬಸ್ ಸಂಖ್ಯೆ ${busId} ನಿಯೋಜಿಸಲಾಗಿದೆ.`
-              : appLanguage === 'Hindi'
-              ? `नया बस संख्या ${busId} तैनात किया गया है।`
-              : `Dispatched custom bus ${busId}`;
-            speakText(text, appLanguage);
+           addLog(`ADMIN: Scheduled new bus ride ${busId} (${busType}) on route ${route} assigned to driver ${driverName} departing at ${depTime}.`);
+           
+           const text = appLanguage === 'Kannada'
+             ? `ಹೊಸ ಬಸ್ ಸಂಖ್ಯೆ ${busId} ನಿಯೋಜಿಸಲಾಗಿದೆ.`
+             : appLanguage === 'Hindi'
+             ? `नया बस संख्या ${busId} तैनात किया गया है।`
+             : `Scheduled bus ride ${busId} to ${destCity}`;
+           speakText(text, appLanguage);
            e.target.reset();
-         }} className="flex flex-col gap-sm">
-           <div className="flex gap-sm">
-             <input type="text" name="busId" placeholder="Bus ID (e.g. KA-51)" style={{ padding: '8px 12px', fontSize: '0.8rem' }} required />
-             <select name="busType" style={{ padding: '8px 12px', fontSize: '0.8rem' }}>
-               <option value="Airavat Club Class">Airavat Volvo</option>
-               <option value="Rajahamsa">Rajahamsa Express</option>
-               <option value="Karnataka Sarige">Karnataka Sarige</option>
-             </select>
+           setDestMode('select');
+         }} className="flex flex-col gap-md">
+           
+           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+             <div className="input-group">
+               <label className="input-label" style={{ fontSize: '0.72rem' }}>Bus ID / License Plate</label>
+               <input type="text" name="busId" placeholder="e.g. KA-09-F-8899" required style={{ fontSize: '0.8rem', padding: '8px 10px' }} />
+             </div>
+             <div className="input-group">
+               <label className="input-label" style={{ fontSize: '0.72rem' }}>Bus Service Tier</label>
+               <select name="busType" style={{ fontSize: '0.8rem', padding: '8px 10px', height: 38 }}>
+                 <option value="Airavat Club Class">Airavat Volvo (Express)</option>
+                 <option value="Rajahamsa">Rajahamsa Express (Standard)</option>
+                 <option value="Karnataka Sarige">Karnataka Sarige (Economy)</option>
+               </select>
+             </div>
            </div>
-           <div className="flex gap-sm">
-             <select name="route" style={{ padding: '8px 12px', fontSize: '0.8rem', flex: 2 }}>
-               <option value="Bengaluru - Mysuru">Bengaluru - Mysuru</option>
-               <option value="Bengaluru - Mangaluru">Bengaluru - Mangaluru</option>
-               <option value="Bengaluru - Hubli">Bengaluru - Hubli</option>
-             </select>
-             <button type="submit" className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem', flex: 1 }}>Dispatch</button>
+
+           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+             <div className="input-group">
+               <label className="input-label" style={{ fontSize: '0.72rem' }}>Assigned Driver/Conductor</label>
+               <input type="text" name="driverName" placeholder="e.g. Ramesh Kumar" required style={{ fontSize: '0.8rem', padding: '8px 10px' }} />
+             </div>
+             <div className="input-group">
+               <label className="input-label" style={{ fontSize: '0.72rem' }}>Departure Time</label>
+               <input type="text" name="depTime" placeholder="e.g. 10:30 AM" required style={{ fontSize: '0.8rem', padding: '8px 10px' }} />
+             </div>
            </div>
+
+           <div className="input-group">
+             <div className="flex justify-between items-center" style={{ marginBottom: 4 }}>
+               <label className="input-label" style={{ fontSize: '0.72rem', marginBottom: 0 }}>Destination Stand</label>
+               <button 
+                 type="button" 
+                 onClick={() => { playSound('click'); setDestMode(destMode === 'select' ? 'custom' : 'select'); }}
+                 style={{ background: 'none', border: 'none', color: 'var(--primary-light)', fontSize: '0.7rem', cursor: 'pointer', padding: 0 }}
+               >
+                 {destMode === 'select' ? '✍️ Add Custom City' : '📋 Choose Existing Stand'}
+               </button>
+             </div>
+
+             {destMode === 'select' ? (
+               <select name="selectDest" style={{ fontSize: '0.8rem', padding: '8px 10px', height: 38 }}>
+                 {stopsList.filter(s => s !== "Kempegowda Bus Station (Majestic), Bengaluru" && s !== "Kengeri Transit Hub, Bengaluru").map(stop => (
+                   <option key={stop} value={stop}>{stop}</option>
+                 ))}
+               </select>
+             ) : (
+               <input type="text" name="customDest" placeholder="e.g. Chikmagalur KSRTC Bus Stand" required style={{ fontSize: '0.8rem', padding: '8px 10px' }} />
+             )}
+           </div>
+
+           <button type="submit" className="btn btn-primary w-full" style={{ padding: '10px 16px', fontSize: '0.85rem', fontWeight: 700 }}>
+             Schedule & Dispatch Bus Ride
+           </button>
          </form>
       </div>
 

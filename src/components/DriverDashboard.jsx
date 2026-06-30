@@ -86,6 +86,19 @@ export default function DriverDashboard() {
           <h4 style={{ fontWeight: 800, borderBottom: '1px solid var(--glass-border)', paddingBottom: 6 }}>Pre-Shift Safety Verification</h4>
           <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Confirm safety status before launching transit route schedules.</p>
           
+          <div className="input-group" style={{ marginBottom: 4 }}>
+            <label className="input-label" style={{ fontSize: '0.75rem' }}>Assigned KSRTC Bus ID</label>
+            <select
+              value={driverBusId}
+              onChange={e => { playSound('click'); setDriverBusId(e.target.value); }}
+              style={{ width: '100%', height: 38, fontSize: '0.8rem', padding: '8px 10px' }}
+            >
+              {buses.map(b => (
+                <option key={b.id} value={b.id}>{b.id} ({b.type} - {b.route})</option>
+              ))}
+            </select>
+          </div>
+
           <div className="flex flex-col gap-xs" style={{ fontSize: '0.78rem' }}>
             {['Brakes pressure confirmed (Green gauge)', 'Tire PSI levels within standard safety rating (32-38 PSI)', 'Windshield wipers & safety indicators operational', 'Assigned cargo manifest locked in locker storage'].map((check, i) => (
               <label key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '6px 0' }}>
@@ -122,7 +135,7 @@ export default function DriverDashboard() {
   return (
     <div className="animate-fade-in pb-32">
       <div className="flex justify-between items-center" style={{ marginBottom: 4 }}>
-        <span style={{ fontSize: '0.75rem', color: 'var(--success)', fontWeight: 800 }}>Shift Active • Conductor Manjunath</span>
+        <span style={{ fontSize: '0.75rem', color: 'var(--success)', fontWeight: 800 }}>Shift Active • Conductor {activeBus.driverName || 'Manjunath'}</span>
         <button 
           onClick={() => { playSound('click'); setDriverCheckedIn(false); addLog('DRIVER: Signed off shift.'); }}
           style={{ background: 'transparent', border: 'none', color: 'var(--error)', fontSize: '0.7rem', textDecoration: 'underline', cursor: 'pointer' }}

@@ -5,7 +5,11 @@ import {
   PlusCircle, 
   Activity, 
   History, 
-  Wrench 
+  Wrench,
+  Home,
+  Signal,
+  Wifi,
+  Battery
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SimulationProvider, useSimulation } from './context/SimulationContext';
@@ -33,7 +37,8 @@ function AppContent() {
     injectAlert,
     logs,
     showConfetti,
-    confettiParticles
+    confettiParticles,
+    theme, setTheme
   } = useSimulation();
 
   return (
@@ -51,6 +56,36 @@ function AppContent() {
           <div className="weather-overlay weather-fog" />
         )}
         
+        {/* Mock Status Bar */}
+        <div className="mock-status-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontWeight: 800 }}>9:30</span>
+            <button 
+              onClick={() => { playSound('click'); setTheme(t => t === 'dark' ? 'light' : 'dark'); }}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                cursor: 'pointer', 
+                fontSize: '0.9rem', 
+                padding: 0, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                outline: 'none',
+                opacity: 0.85
+              }}
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
+          </div>
+          <div className="status-icons">
+            <Signal size={14} />
+            <Wifi size={14} />
+            <Battery size={16} />
+          </div>
+        </div>
+
         {globalBroadcast && currentUser && (
           <div className="broadcast-banner">
             <span className="broadcast-text">{globalBroadcast}</span>
@@ -138,39 +173,47 @@ function AppContent() {
               )}
 
               {/* Bottom navigation bar */}
-              <nav className="glass" style={{ 
-                position: 'absolute', bottom: 15, left: '50%', transform: 'translateX(-50%)',
-                display: 'flex', gap: 20, padding: '10px 20px', borderRadius: 100,
-                width: '90%', justifyContent: 'space-around', zIndex: 50
-              }}>
+              <nav className="floating-bottom-nav">
                 {currentUser === 'Admin' ? (
-                  <div style={{ color: 'var(--primary)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <button className="nav-item-btn active">
                     <Activity size={20} />
-                    <span style={{ fontSize: '0.6rem', fontWeight: 800 }}>Command Center</span>
-                  </div>
+                    <span className="nav-label">Command Center</span>
+                  </button>
                 ) : currentUser === 'Driver' ? (
-                  <div style={{ color: 'var(--primary)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <button className="nav-item-btn active">
                     <Package size={20} />
-                    <span style={{ fontSize: '0.6rem', fontWeight: 800 }}>Inventory Manifest</span>
-                  </div>
+                    <span className="nav-label">Inventory Manifest</span>
+                  </button>
                 ) : (
                   <>
-                    <div style={{ color: activeTab === 'dashboard' ? 'var(--primary)' : 'var(--text-muted)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }} onClick={() => { playSound('click'); setActiveTab('dashboard'); }}>
-                       <Activity size={20} />
-                       <span style={{ fontSize: '0.6rem', fontWeight: 700 }}>{t.active}</span>
-                    </div>
-                    <div style={{ color: activeTab === 'booking' ? 'var(--primary)' : 'var(--text-muted)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }} onClick={() => { playSound('click'); setActiveTab('booking'); }}>
-                       <PlusCircle size={20} />
-                       <span style={{ fontSize: '0.6rem', fontWeight: 700 }}>{t.book}</span>
-                    </div>
-                    <div style={{ color: activeTab === 'history' ? 'var(--primary)' : 'var(--text-muted)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }} onClick={() => { playSound('click'); setActiveTab('history'); }}>
-                       <History size={20} />
-                       <span style={{ fontSize: '0.6rem', fontWeight: 700 }}>{t.history}</span>
-                    </div>
-                    <div style={{ color: activeTab === 'profile' ? 'var(--primary)' : 'var(--text-muted)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }} onClick={() => { playSound('click'); setActiveTab('profile'); }}>
-                       <User size={20} />
-                       <span style={{ fontSize: '0.6rem', fontWeight: 700 }}>{t.profile}</span>
-                    </div>
+                    <button 
+                      className={`nav-item-btn ${activeTab === 'dashboard' ? 'active' : ''}`} 
+                      onClick={() => { playSound('click'); setActiveTab('dashboard'); }}
+                    >
+                      <Home size={20} />
+                      {activeTab === 'dashboard' && <span className="nav-label">Home</span>}
+                    </button>
+                    <button 
+                      className={`nav-item-btn ${activeTab === 'booking' ? 'active' : ''}`} 
+                      onClick={() => { playSound('click'); setActiveTab('booking'); }}
+                    >
+                      <PlusCircle size={20} />
+                      {activeTab === 'booking' && <span className="nav-label">Book</span>}
+                    </button>
+                    <button 
+                      className={`nav-item-btn ${activeTab === 'history' ? 'active' : ''}`} 
+                      onClick={() => { playSound('click'); setActiveTab('history'); }}
+                    >
+                      <History size={20} />
+                      {activeTab === 'history' && <span className="nav-label">History</span>}
+                    </button>
+                    <button 
+                      className={`nav-item-btn ${activeTab === 'profile' ? 'active' : ''}`} 
+                      onClick={() => { playSound('click'); setActiveTab('profile'); }}
+                    >
+                      <User size={20} />
+                      {activeTab === 'profile' && <span className="nav-label">Profile</span>}
+                    </button>
                   </>
                 )}
               </nav>

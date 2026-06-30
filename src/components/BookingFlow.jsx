@@ -1,13 +1,50 @@
 import React, { useState } from 'react';
-import { ChevronRight, PlusCircle, Leaf, QrCode } from 'lucide-react';
+import { ChevronRight, PlusCircle, Leaf, QrCode, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  useSimulation, playSound, PRICING_TIERS, STOPS, sanitizeInput 
+  useSimulation, playSound, PRICING_TIERS, sanitizeInput 
 } from '../context/SimulationContext';
 import Header from './Header';
+import userAvatar from '../user_avatar.png';
+
+const BusGraphic = () => (
+  <svg viewBox="0 0 200 100" style={{ width: '80%', height: '80%', color: 'var(--primary)' }} fill="currentColor">
+    {/* Road shadow */}
+    <ellipse cx="100" cy="85" rx="80" ry="8" fill="rgba(0,0,0,0.1)" />
+    {/* Main body */}
+    <path d="M20 30 C20 22, 28 20, 40 20 L160 20 C172 20, 180 28, 180 40 L180 75 C180 78, 175 80, 170 80 L30 80 C25 80, 20 78, 20 75 Z" />
+    {/* Windshield / Front Window */}
+    <path d="M25 32 L50 32 L50 55 L25 55 Z" fill="rgba(255, 255, 255, 0.75)" />
+    {/* Passenger Windows */}
+    <rect x="58" y="32" width="22" height="18" rx="2" fill="rgba(255, 255, 255, 0.6)" />
+    <rect x="86" y="32" width="22" height="18" rx="2" fill="rgba(255, 255, 255, 0.6)" />
+    <rect x="114" y="32" width="22" height="18" rx="2" fill="rgba(255, 255, 255, 0.6)" />
+    <rect x="142" y="32" width="22" height="18" rx="2" fill="rgba(255, 255, 255, 0.6)" />
+    {/* Headlight */}
+    <polygon points="20,62 10,65 20,68" fill="#f59e0b" />
+    {/* Front light beam */}
+    <polygon points="10,65 -30,55 -30,75" fill="rgba(245, 158, 11, 0.15)" />
+    {/* Tail light */}
+    <rect x="176" y="60" width="4" height="10" rx="1" fill="#ef4444" />
+    {/* Wheels */}
+    <circle cx="50" cy="80" r="14" fill="#111827" stroke="#ffffff" strokeWidth="3" />
+    <circle cx="50" cy="80" r="6" fill="#9ca3af" />
+    <circle cx="150" cy="80" r="14" fill="#111827" stroke="#ffffff" strokeWidth="3" />
+    <circle cx="150" cy="80" r="6" fill="#9ca3af" />
+  </svg>
+);
+
+const conductorDetails = {
+  'AW-102': { name: 'Manjunath K.', rating: '99% Smooth Ride', avatar: userAvatar },
+  'RJ-205': { name: 'Carlos Santos', rating: '95% Smooth Ride', avatar: userAvatar },
+  'AW-007': { name: 'Lucas Martinez', rating: '93% Smooth Ride', avatar: userAvatar },
+  'KS-442': { name: 'Ranganath S.', rating: '91% Smooth Ride', avatar: userAvatar },
+  'default': { name: 'Chennappa G.', rating: '92% Smooth Ride', avatar: userAvatar }
+};
 
 export default function BookingFlow() {
   const {
+    stopsList,
     buses,
     parcels, setParcels,
     walletBalance, setWalletBalance,
@@ -165,7 +202,7 @@ export default function BookingFlow() {
             <label className="input-label">Destination Stop</label>
             <select value={searchStop} onChange={e => { playSound('click'); setSearchStop(e.target.value); }} style={{ width: '100%' }}>
               <option value="">Select destination stand...</option>
-              {STOPS.filter(s => s !== "Kempegowda Bus Station (Majestic), Bengaluru" && s !== "Kengeri Transit Hub, Bengaluru").map(stop => (
+              {stopsList.filter(s => s !== "Kempegowda Bus Station (Majestic), Bengaluru" && s !== "Kengeri Transit Hub, Bengaluru").map(stop => (
                 <option key={stop} value={stop}>{stop}</option>
               ))}
             </select>
@@ -467,46 +504,134 @@ export default function BookingFlow() {
       })()}
 
       <AnimatePresence>
-        {showWaybill && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ position: 'fixed', inset: 0, zIndex: 4500, background: 'var(--background)', display: 'flex', flexDirection: 'column', alignItems: 'center', justify: 'center', padding: 20 }}>
-            <div className="card w-full" style={{ maxWidth: 360, textAlign: 'center' }}>
-              <h3 style={{ color: 'var(--success)' }}>Slot Booking Success</h3>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 16 }}>Select a departing bus from schedule:</p>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+        {showWaybill && (() => {
+          const { total } = calculateTotal();
+          return (
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              exit={{ opacity: 0, y: 30 }}
+              style={{ 
+                position: 'fixed', 
+                inset: 0, 
+                zIndex: 4500, 
+                background: 'var(--background)', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                padding: '24px 20px' 
+              }}
+            >
+              {/* Premium Top Navigation Bar */}
+              <div className="flex items-center gap-md" style={{ marginBottom: 20, borderBottom: '1px solid var(--glass-border)', paddingBottom: 12 }}>
+                <button 
+                  onClick={() => setShowWaybill(false)} 
+                  style={{ background: 'var(--surface-secondary)', border: '1px solid var(--glass-border)', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)' }}
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Choose a driver</h3>
+              </div>
+
+              {/* Scrollable list of driver options */}
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 24 }} className="no-scrollbar">
                 {availableBuses.length === 0 ? (
-                  <div className="card" style={{ padding: 12, cursor: 'pointer', background: 'var(--primary-glow)', border: '1px solid var(--primary)' }} onClick={() => confirmBookingAllocation('AW-102')}>
-                    <h4 style={{ fontSize: '0.85rem' }}>Auto-Allocate Airavat AW-102</h4>
-                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>No other matching route schedule found.</p>
-                  </div>
-                ) : (
-                  availableBuses.map(bus => (
-                    <div 
-                      key={bus.id} 
-                      onClick={() => confirmBookingAllocation(bus.id)}
-                      className="card flex justify-between items-center" 
-                      style={{ padding: 10, cursor: 'pointer', border: '1px solid var(--glass-border)', background: 'var(--input-bg)' }}
-                    >
-                      <div style={{ textAlign: 'left' }}>
-                        <span style={{ fontWeight: 800, fontSize: '0.8rem' }}>{bus.id} ({bus.type})</span>
-                        <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Status: {bus.location} • {bus.eta}</p>
+                  // Render a mock driver card if no buses match, keeping the demo functional!
+                  (() => {
+                    const busId = 'AW-102';
+                    const cond = conductorDetails[busId];
+                    return (
+                      <div className="driver-card-premium">
+                        <div className="driver-header-row">
+                          <div className="driver-meta-profile">
+                            <div className="driver-avatar-circle">
+                              <img src={cond.avatar} className="driver-avatar-image" alt="Conductor Avatar" />
+                            </div>
+                            <div>
+                              <div className="driver-name-text">{cond.name}</div>
+                              <div className="driver-rating-sub">✨ {cond.rating}</div>
+                            </div>
+                          </div>
+                          <div className="driver-price-tag">
+                            ₹{total}
+                          </div>
+                        </div>
+                        
+                        <div className="driver-vehicle-container">
+                          <BusGraphic />
+                        </div>
+                        
+                        <div className="driver-vehicle-info-footer">
+                          <div>
+                            <div className="driver-vehicle-title">Airavat Club Class (AW-102)</div>
+                            <div className="driver-eta-label">⏱️ 12 mins away • Auto-allocated fallback</div>
+                          </div>
+                          
+                          <button 
+                            className="btn btn-book-now"
+                            onClick={() => confirmBookingAllocation(busId)}
+                          >
+                            Book Now
+                          </button>
+                        </div>
                       </div>
-                      <ChevronRight size={16} />
-                    </div>
-                  ))
+                    );
+                  })()
+                ) : (
+                  availableBuses.map(bus => {
+                    const cond = conductorDetails[bus.id] || conductorDetails['default'];
+                    return (
+                      <div key={bus.id} className="driver-card-premium">
+                        <div className="driver-header-row">
+                          <div className="driver-meta-profile">
+                            <div className="driver-avatar-circle">
+                              <img src={cond.avatar} className="driver-avatar-image" alt="Conductor Avatar" />
+                            </div>
+                            <div>
+                              <div className="driver-name-text">{cond.name}</div>
+                              <div className="driver-rating-sub">✨ {cond.rating}</div>
+                            </div>
+                          </div>
+                          <div className="driver-price-tag">
+                            ₹{total}
+                          </div>
+                        </div>
+                        
+                        <div className="driver-vehicle-container">
+                          <BusGraphic />
+                        </div>
+                        
+                        <div className="driver-vehicle-info-footer">
+                          <div>
+                            <div className="driver-vehicle-title">{bus.type} ({bus.id})</div>
+                            <div className="driver-eta-label">⏱️ {bus.eta} away • {bus.location}</div>
+                          </div>
+                          
+                          <button 
+                            className="btn btn-book-now"
+                            onClick={() => confirmBookingAllocation(bus.id)}
+                          >
+                            Book Now
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
 
-              <div style={{ background: 'white', padding: 12, borderRadius: 12, display: 'inline-block', marginBottom: 12 }}>
-                <QrCode size={110} color="black" />
+              {/* Waybill / QR Info Footer */}
+              <div className="card flex items-center gap-md" style={{ background: 'var(--surface-secondary)', padding: 12, borderRadius: 20 }}>
+                <div style={{ background: 'white', padding: 6, borderRadius: 8 }}>
+                  <QrCode size={48} color="black" />
+                </div>
+                <div style={{ flex: 1, textAlign: 'left' }}>
+                  <span style={{ fontWeight: 800, fontSize: '0.9rem', letterSpacing: 1 }}>WAYBILL REF: {bookingRef}</span>
+                  <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 2 }}>Present at kiosk to complete shipment dispatch.</p>
+                </div>
               </div>
-              <div style={{ background: 'var(--input-bg)', padding: 10, borderRadius: 8 }}>
-                <span style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: 2 }}>{bookingRef}</span>
-                <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Present barcode at kiosk to dispatch parcel.</p>
-              </div>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
     </div>
   );

@@ -4,13 +4,18 @@ import { useSimulation, playSound, getRealRouteStops, getRealRouteCoordinates, g
 
 // Customer Leaflet Map Component (Leaflet GPS integration for tracking)
 const CustomerLeafletMap = ({ bus, routeStops, highwayCoords }) => {
+  const { theme } = useSimulation();
   const mapRef = useRef(null);
   const tileLayerRef = useRef(null);
   const busMarkerRef = useRef(null);
   const stopMarkersRef = useRef([]);
   const polylineRef = useRef(null);
 
-  const [activeLayer, setActiveLayer] = useState('dark');
+  const [activeLayer, setActiveLayer] = useState(theme === 'light' ? 'light' : 'dark');
+
+  useEffect(() => {
+    setActiveLayer(theme === 'light' ? 'light' : 'dark');
+  }, [theme]);
 
   useEffect(() => {
     const startCoord = routeStops[0] ? [routeStops[0].lat, routeStops[0].lng] : [12.97787, 77.57124];

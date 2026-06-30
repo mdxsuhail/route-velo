@@ -4,58 +4,58 @@
   --primary: #dc2626;          /* KSRTC Signature Red */
   --primary-dark: #991b1b;
   --primary-light: #f87171;
-  --primary-glow: rgba(220, 38, 38, 0.3);
+  --primary-glow: rgba(220, 38, 38, 0.2);
   --secondary: #64748b;
-  --accent: #f59e0b;           /* Amber/Warning gold */
-  --accent-glow: rgba(245, 158, 11, 0.25);
+  --accent: #fbbf24;           /* KSRTC Signature Yellow */
+  --accent-glow: rgba(251, 191, 36, 0.2);
   --success: #10b981;          /* Green */
   --success-glow: rgba(16, 185, 129, 0.25);
   --error: #ef4444;            /* Red Alert */
   --error-glow: rgba(239, 68, 68, 0.35);
   
-  --background: #080c14;       /* Deep Space Black */
-  --surface: #111827;          /* Slate Dark */
-  --surface-card: rgba(17, 24, 39, 0.75);
-  --surface-secondary: #1f2937;
+  --background: #090e1a;       /* Sleek Deep Blue-Black */
+  --surface: #111b30;          /* Slate Navy */
+  --surface-card: rgba(17, 27, 48, 0.85);
+  --surface-secondary: #1e293b;
   --text-main: #f9fafb;
-  --text-muted: #9ca3af;
+  --text-muted: #94a3b8;
   --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 24px;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 20px -2px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 10px 30px -3px rgba(0, 0, 0, 0.7);
-  --glass: rgba(15, 23, 42, 0.65);
+  --radius-md: 16px;
+  --radius-lg: 28px;           /* Extra round premium cards */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 30px -4px rgba(0, 0, 0, 0.5);
+  --glass: rgba(15, 27, 48, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --input-bg: rgba(3, 7, 18, 0.6);
+  --input-bg: rgba(7, 13, 27, 0.6);
   --grid-line: rgba(255, 255, 255, 0.02);
 }
 
 [data-theme="light"] {
-  --primary: #dc2626;
+  --primary: #dc2626;          /* KSRTC Signature Red */
   --primary-dark: #b91c1c;
-  --primary-light: #fca5a5;
-  --primary-glow: rgba(220, 38, 38, 0.15);
-  --secondary: #475569;
-  --accent: #d97706;
+  --primary-light: #ef4444;
+  --primary-glow: rgba(220, 38, 38, 0.12);
+  --secondary: #4b5563;
+  --accent: #d97706;           /* KSRTC Signature Yellow (Darker for contrast) */
   --accent-glow: rgba(217, 119, 6, 0.15);
-  --success: #059669;
-  --success-glow: rgba(5, 150, 105, 0.15);
-  --error: #dc2626;
-  --error-glow: rgba(220, 38, 38, 0.15);
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.15);
+  --error: #ef4444;
+  --error-glow: rgba(239, 68, 68, 0.15);
   
-  --background: #f1f5f9;
-  --surface: #ffffff;
-  --surface-card: rgba(255, 255, 255, 0.85);
-  --surface-secondary: #e2e8f0;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --glass: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --input-bg: rgba(241, 245, 249, 0.9);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 30px -3px rgba(0, 0, 0, 0.12);
+  --background: #f4f5f8;       /* Very soft light grey */
+  --surface: #ffffff;          /* Pure White */
+  --surface-card: #ffffff;
+  --surface-secondary: #f3f4f6;
+  --text-main: #09090b;        /* Deep zinc black */
+  --text-muted: #71717a;       /* Zinc grey */
+  --glass: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(228, 228, 231, 0.9);
+  --input-bg: #f4f4f5;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.06);
   --grid-line: rgba(0, 0, 0, 0.015);
 }
 
@@ -1092,3 +1092,465 @@ table tr:hover td {
   background: rgba(255,255,255,0.06);
 }
 .activity-item { position: relative; }
+
+/* ========================================================
+   MOCKUP DESIGN SYSTEM & OVERHAUL STYLES
+   ======================================================== */
+
+/* 1. Phone Status Bar */
+.mock-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  background: transparent;
+  z-index: 1000;
+  user-select: none;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.2px;
+}
+
+.mock-status-bar .status-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 2. Floating Bottom Navigation Capsule */
+.floating-bottom-nav {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 64px;
+  border-radius: 32px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 16px;
+  z-index: 1000;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 16px -6px rgba(0, 0, 0, 0.05);
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.nav-item-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  color: var(--text-muted);
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+.nav-item-btn.active {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  padding: 10px 20px;
+  border-radius: 20px;
+  gap: 8px;
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.nav-item-btn .nav-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+/* 3. Category Selector Elements */
+.categories-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  margin-bottom: 20px;
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.category-bubble {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--surface-card);
+  border: 1.5px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-main);
+  position: relative;
+}
+
+.category-bubble:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-light);
+}
+
+.category-item.active .category-bubble {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 8px 16px var(--primary-glow) !important;
+}
+
+.category-item.active .category-tag-label {
+  background: #000000;
+  color: #ffffff;
+}
+
+.category-tag-label {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  background: var(--surface-secondary);
+  color: var(--text-muted);
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 4. Journey Card Layout */
+.journey-card {
+  background: var(--surface-card);
+  border-radius: 28px !important;
+  border: 1px solid var(--glass-border);
+  padding: 20px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.journey-node-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.journey-node {
+  flex: 1;
+}
+
+.journey-node-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.journey-node-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.3px;
+}
+
+.journey-node-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.journey-divider-line {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.journey-divider-line:hover {
+  color: var(--primary);
+  border-color: var(--primary-light);
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+
+.journey-details-row {
+  display: flex;
+  gap: 12px;
+  border-top: 1px dashed var(--glass-border);
+  padding-top: 16px;
+}
+
+.journey-detail-item {
+  flex: 1;
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border);
+  padding: 10px 14px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.journey-detail-item label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.journey-detail-item span, .journey-detail-item select {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-main);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  cursor: pointer;
+  height: auto;
+  width: auto;
+}
+
+.journey-search-btn-black {
+  background: #09090b !important;
+  color: #ffffff !important;
+  border: none;
+  border-radius: 20px !important;
+  padding: 14px 20px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  width: 100%;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(9, 9, 11, 0.15);
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.journey-search-btn-black:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(9, 9, 11, 0.25);
+  filter: brightness(1.2);
+}
+
+.journey-search-btn-black:active {
+  transform: translateY(0);
+}
+
+/* 5. Driver / Conductor Cards (Screen 3 matching) */
+.driver-card-premium {
+  background: var(--surface-card);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.25s ease;
+}
+
+.driver-card-premium:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-md);
+}
+
+.driver-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.driver-meta-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.driver-avatar-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--surface-secondary);
+  border: 1.5px solid var(--glass-border);
+}
+
+.driver-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.driver-name-text {
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--text-main);
+}
+
+.driver-rating-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.driver-price-tag {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-main);
+  background: var(--surface-secondary);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.driver-vehicle-container {
+  height: 120px;
+  background: linear-gradient(180deg, rgba(37,99,235,0.02) 0%, rgba(37,99,235,0.06) 100%);
+  border: 1px solid rgba(37,99,235,0.06);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.driver-vehicle-info-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.driver-vehicle-title {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+
+.driver-eta-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-book-now {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  border-radius: 16px !important;
+  font-weight: 800 !important;
+  font-size: 0.78rem !important;
+  padding: 8px 16px !important;
+  box-shadow: 0 4px 10px var(--primary-glow) !important;
+}
+
+/* 6. General cleanups for light mode header */
+.dashboard-premium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 4px;
+  margin-bottom: 16px;
+}
+
+.header-profile-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-credit-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--glass-border);
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-credit-badge:hover {
+  background: var(--surface);
+  border-color: var(--primary);
+}
+
+.header-credit-amount {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+
+.header-credit-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.header-bell-button {
+  background: var(--surface-card);
+  border: 1px solid var(--glass-border);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-main);
+}
+
+.header-bell-button:hover {
+  border-color: var(--primary-light);
+}
+
+.header-bell-unread-dot {
+  position: absolute;
+  top: 10px;
+  right: 11px;
+  width: 6px;
+  height: 6px;
+  background: #ef4444;
+  border-radius: 50%;
+}
+

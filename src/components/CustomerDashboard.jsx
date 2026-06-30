@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { 
   Search, Sun, CloudRain, CloudFog, Lock, Star, Coins, HelpCircle, 
-  Package, CreditCard, MapPin, Activity, History 
+  Package, CreditCard, MapPin, Activity, History, Bell, User, ArrowRightLeft, Compass
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   useSimulation, playSound, speakText 
 } from '../context/SimulationContext';
-import Header from './Header';
+import userAvatar from '../user_avatar.png';
 
 export default function CustomerDashboard() {
   const {
@@ -26,6 +26,9 @@ export default function CustomerDashboard() {
     setSelectedParcel,
     addLog,
     triggerConfettiEffect,
+    hasUnread, setHasUnread,
+    notificationsOpen, setNotificationsOpen,
+    notifications,
     t
   } = useSimulation();
 
@@ -48,96 +51,189 @@ export default function CustomerDashboard() {
 
   return (
     <div className="animate-fade-in pb-32">
-       <Header title="RouteVelo Logistics" />
-       
-       {/* Search Filter */}
-       <div className="card flex items-center justify-between" style={{ marginBottom: 16, padding: '10px 14px', background: 'var(--input-bg)' }}>
-         <div className="flex items-center gap-sm w-full">
-           <Search color="var(--text-muted)" size={18} />
-           <input 
-             type="text" 
-             placeholder={t.trackShipment} 
-             value={searchTerm}
-             onChange={(e) => setSearchTerm(e.target.value)}
-             style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontSize: '0.85rem', width: '100%', outline: 'none' }} 
-           />
+       {/* Mockup Top Header Row */}
+       <div className="dashboard-premium-header">
+         <div className="header-profile-section">
+           <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', border: '1.5px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+             <img src={userAvatar} alt="Muhammad Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+           </div>
+           <div>
+             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700 }}>Hello,</div>
+             <div style={{ fontSize: '0.88rem', fontWeight: 800 }}>Muhammad</div>
+           </div>
+         </div>
+         
+         <div className="flex items-center gap-sm" style={{ position: 'relative' }}>
+           <div className="header-credit-badge" onClick={() => { playSound('click'); setShowTopUp(true); }}>
+             <Coins size={14} color="var(--primary)" />
+             <span className="header-credit-amount">₹{walletBalance.toLocaleString()}</span>
+             <span className="header-credit-label">Top up</span>
+           </div>
+           
+           <button 
+             className="header-bell-button"
+             onClick={() => { playSound('click'); setNotificationsOpen(!notificationsOpen); setHasUnread(false); }}
+           >
+             <Bell size={18} />
+             {hasUnread && <div className="header-bell-unread-dot" />}
+           </button>
+
+           <AnimatePresence>
+             {notificationsOpen && (
+               <motion.div 
+                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                 className="card" style={{ position: 'absolute', top: 50, right: 0, zIndex: 100, width: 280, padding: 16, maxHeight: 300, overflowY: 'auto' }}
+               >
+                 <h4 style={{ fontWeight: 800, marginBottom: 12, borderBottom: '1px solid var(--glass-border)', paddingBottom: 6, fontSize: '0.82rem' }}>Operational Alerts</h4>
+                 {notifications.map(n => (
+                   <div key={n.id} style={{ marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--glass-border)' }}>
+                     <div className="flex justify-between items-start">
+                       <span style={{ fontWeight: 800, fontSize: '0.75rem', color: n.type === 'alert' ? 'var(--accent)' : 'var(--success)' }}>{n.title}</span>
+                       <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>{n.time}</span>
+                     </div>
+                     <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 2 }}>{n.message}</p>
+                   </div>
+                 ))}
+               </motion.div>
+             )}
+           </AnimatePresence>
          </div>
        </div>
 
-       {/* Weather & Locker triggers Row */}
-       <div className="flex gap-md" style={{ marginBottom: 12 }}>
+       {/* Mockup Title Header */}
+       <div style={{ marginBottom: 20 }}>
+         <span style={{ fontSize: '1rem', color: 'var(--primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>RouteVelo Logistics</span>
+         <h1 style={{ fontSize: '1.9rem', fontWeight: 900, marginTop: 4, color: 'var(--text-main)', lineHeight: 1.2 }}>Hello Muhammad,<br/>Where to send?</h1>
+       </div>
+       
+       {/* Search Destination bar linking to Booking Flow */}
+       <div className="card flex items-center justify-between" style={{ marginBottom: 20, padding: '12px 16px', background: 'var(--input-bg)', borderRadius: '20px' }}>
+         <div className="flex items-center gap-sm w-full" onClick={() => { playSound('click'); setActiveTab('booking'); }} style={{ cursor: 'pointer' }}>
+           <Search color="var(--text-muted)" size={18} />
+           <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>Enter destination stop...</span>
+         </div>
+         <div 
+           className="flex items-center justify-center" 
+           style={{ background: 'var(--primary)', width: 34, height: 34, borderRadius: '12px', color: 'white', cursor: 'pointer', boxShadow: '0 4px 8px var(--primary-glow)' }}
+           onClick={() => { playSound('click'); setActiveTab('tracking'); }}
+         >
+           <Compass size={18} />
+         </div>
+       </div>
+
+       {/* Mockup Category Bubble List */}
+        <div className="categories-container" style={{ justifyContent: 'center', gap: 20 }}>
+          {[
+            { id: 'All', label: 'All Cargo', icon: '📦' },
+            { id: 'Sending', label: 'Sending', icon: '📤' },
+            { id: 'Receiving', label: 'Receiving', icon: '📥' }
+          ].map(cat => {
+            const isActive = filter === cat.id;
+            return (
+              <div 
+                key={cat.id} 
+                className={`category-item ${isActive ? 'active' : ''}`}
+                onClick={() => { playSound('click'); setFilter(cat.id); }}
+                style={{ flex: '0 1 80px' }}
+              >
+                <div className="category-bubble">
+                  <span style={{ fontSize: '1.4rem' }}>{cat.icon}</span>
+                </div>
+                <span className="category-tag-label">{cat.label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+       {/* Journey Node Card */}
+       <div className="journey-card">
+         <div className="journey-node-row">
+           <div className="journey-node">
+             <div className="journey-node-label">From</div>
+             <div className="journey-node-value">BLR</div>
+             <div className="journey-node-sub">Kempegowda Majestic</div>
+           </div>
+           
+           <div className="journey-divider-line" onClick={() => { playSound('click'); setActiveTab('booking'); }}>
+             <ArrowRightLeft size={16} style={{ transform: 'rotate(90deg)', color: 'var(--primary)' }} />
+           </div>
+
+           <div className="journey-node" style={{ textAlign: 'right' }}>
+             <div className="journey-node-label">To</div>
+             <div className="journey-node-value">MYS</div>
+             <div className="journey-node-sub">Mysuru Central</div>
+           </div>
+         </div>
+
+         <div className="journey-details-row">
+           <div className="journey-detail-item" onClick={() => setActiveTab('booking')} style={{ cursor: 'pointer' }}>
+             <label>Departing on</label>
+             <span style={{ fontSize: '0.8rem', fontWeight: 800 }}>Select Date</span>
+           </div>
+           <div className="journey-detail-item" onClick={() => setActiveTab('booking')} style={{ cursor: 'pointer' }}>
+             <label>Cargo load</label>
+             <span style={{ fontSize: '0.8rem', fontWeight: 800 }}>1 Passenger / Item</span>
+           </div>
+         </div>
+
+         <button 
+           className="journey-search-btn-black" 
+           onClick={() => { playSound('click'); setActiveTab('booking'); }}
+         >
+           Search
+         </button>
+       </div>
+
+       {/* Weather & Locker Quick Actions Row */}
+       <div className="flex gap-md" style={{ marginBottom: 20 }}>
          <div className="card flex-1 flex items-center gap-sm" style={{ padding: '12px', background: 'var(--input-bg)' }}>
            {weather === 'Clear' && <Sun color="var(--accent)" size={22} />}
            {weather === 'Rainy' && <CloudRain color="var(--primary-light)" size={22} className="animate-pulse" />}
            {weather === 'Foggy' && <CloudFog color="var(--text-muted)" size={22} />}
            <div>
-             <h4 style={{ margin: 0, fontSize: '0.75rem', fontWeight: 800 }}>Weather: {weather}</h4>
-             <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>
+             <h4 style={{ margin: 0, fontSize: '0.72rem', fontWeight: 800 }}>Weather: {weather}</h4>
+             <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>
                {weather === 'Clear' ? 'Schedules active' : weather === 'Rainy' ? '30% Transit Delay' : '50% Visibility Delay'}
              </span>
            </div>
          </div>
 
-         <button className="btn btn-secondary flex-1" style={{ padding: '12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }} onClick={() => setActiveLockerClaim('select_locker')}>
+         <button className="btn btn-secondary flex-1" style={{ padding: '12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, height: 48, borderRadius: 16 }} onClick={() => { playSound('click'); setActiveLockerClaim('select_locker'); }}>
            <Lock size={14} color="var(--accent)" /> Locker Pickup
          </button>
        </div>
 
        {/* Streaks, Coins and FAQ widgets */}
-       <div className="flex gap-md" style={{ marginBottom: 16 }}>
+       <div className="flex gap-md" style={{ marginBottom: 20 }}>
          {/* Streak Widget */}
-         <div className="card flex-1 flex flex-col justify-center items-center" style={{ border: '1.5px solid var(--accent)', background: 'var(--accent-glow)', cursor: 'pointer', padding: '10px' }} onClick={() => { playSound('click'); setShowStreak(true); }}>
-            <Star color="var(--accent)" fill="var(--accent)" size={16} style={{ marginBottom: 4 }} />
-            <h4 style={{ margin: 0, fontWeight: 800, color: 'var(--accent)', fontSize: '0.72rem' }}>{t.streakTitle}</h4>
-            <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>Claim rewards</span>
+         <div className="card flex-1 flex flex-col justify-center items-center" style={{ border: '1.5px solid var(--primary)', background: 'var(--primary-glow)', cursor: 'pointer', padding: '10px' }} onClick={() => { playSound('click'); setShowStreak(true); }}>
+            <Star color="var(--primary)" fill="var(--primary)" size={16} style={{ marginBottom: 4 }} />
+            <h4 style={{ margin: 0, fontWeight: 800, color: 'var(--primary)', fontSize: '0.7rem' }}>{t.streakTitle}</h4>
+            <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)' }}>Claim rewards</span>
          </div>
 
          {/* RouteCoins Shop Widget */}
          <div className="card flex-1 flex flex-col justify-center items-center" style={{ padding: '10px', border: '1px solid var(--glass-border)', cursor: 'pointer' }} onClick={() => { playSound('click'); setShowCoinsShop(true); }}>
             <Coins color="var(--accent)" size={16} style={{ marginBottom: 4 }} />
-            <h4 style={{ margin: 0, fontWeight: 800, fontSize: '0.72rem', color: 'var(--text-main)' }}>Shop</h4>
-            <span style={{ fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 700 }}>₹{routeCoins} Coins</span>
+            <h4 style={{ margin: 0, fontWeight: 800, fontSize: '0.7rem', color: 'var(--text-main)' }}>Shop</h4>
+            <span style={{ fontSize: '0.58rem', color: 'var(--accent)', fontWeight: 700 }}>₹{routeCoins} Coins</span>
          </div>
 
          {/* Help Desk Widget */}
          <div className="card flex-1 flex flex-col justify-center items-center" style={{ padding: '10px', cursor: 'pointer' }} onClick={() => { playSound('click'); setShowFAQ(true); }}>
             <HelpCircle color="var(--primary-light)" size={16} style={{ marginBottom: 4 }} />
-            <h4 style={{ margin: 0, fontWeight: 800, fontSize: '0.72rem' }}>FAQ Help</h4>
-            <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>Depot rules</span>
+            <h4 style={{ margin: 0, fontWeight: 800, fontSize: '0.7rem' }}>FAQ Help</h4>
+            <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)' }}>Depot rules</span>
          </div>
        </div>
 
-       {/* Wallet Widget */}
-       <div className="card mb-lg relative overflow-hidden" style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))', color: 'white', marginBottom: 20, minHeight: 120 }}>
-         <div style={{ position: 'absolute', right: -15, top: -15, opacity: 0.08 }}><Package size={110} /></div>
-         <div className="flex justify-between items-start relative z-10">
-           <div>
-             <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.75rem', fontWeight: 600 }}>{t.wallet}</p>
-             <h1 style={{ color: 'white', margin: 0, fontSize: '2.1rem', fontWeight: 800 }}>₹{walletBalance.toLocaleString()}</h1>
-           </div>
-           <div className="flex flex-col gap-sm">
-              <button className="btn" onClick={() => { playSound('click'); setShowTopUp(true); }} style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: '0.75rem' }}>{t.topUp}</button>
-              <button onClick={() => { playSound('click'); setShowTransactions(true); }} style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '0.7rem', textDecoration: 'underline', cursor: 'pointer', opacity: 0.9 }}>{t.viewHistory}</button>
-           </div>
-         </div>
-       </div>
-
-       {/* Navigation to Kiosk */}
-       <button className="btn w-full" style={{ background: 'var(--accent)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 16px', marginBottom: 16 }} onClick={() => { playSound('click'); setShowKiosks(true); }}>
-          <MapPin size={18} /> Find Nearby KSRTC Kiosk
+       {/* Kiosk Locator Button */}
+       <button className="btn w-full" style={{ background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 16px', marginBottom: 20, borderRadius: 16, height: 48 }} onClick={() => { playSound('click'); setShowKiosks(true); }}>
+          <MapPin size={16} /> Find Nearby KSRTC Kiosk
        </button>
 
-       {/* Filter Selector */}
-       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-         {['All', 'Sending', 'Receiving'].map(f => (
-           <button key={f} className="badge" style={{ padding: '6px 12px', background: filter === f ? 'var(--primary)' : 'var(--input-bg)', color: 'white', border: '1px solid var(--glass-border)', cursor: 'pointer' }} onClick={() => { playSound('click'); setFilter(f); }}>
-             {f}
-           </button>
-         ))}
-       </div>
-
-       {/* Order items lists */}
-       <h3 style={{ fontWeight: 800, fontSize: '1rem', marginBottom: 12 }} className="flex items-center gap-sm"><Activity size={16} /> Active Cargo Manifest</h3>
+       {/* Active Cargo Section */}
+       <h3 style={{ fontWeight: 800, fontSize: '1rem', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Activity size={16} /> Active Cargo Manifest</h3>
        
        <div className="flex flex-col gap-sm">
          {activeOrdersList.length === 0 ? (

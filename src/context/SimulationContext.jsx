@@ -465,6 +465,7 @@ const SimulationContext = createContext(null);
 export const useSimulation = () => useContext(SimulationContext);
 
 export const SimulationProvider = ({ children }) => {
+  const [stopsList, setStopsList] = useState(STOPS);
   // Global Simulation State
   const [buses, setBuses] = useState([
     { id: 'AW-102', route: 'Bengaluru - Mysuru', type: 'Airavat Club Class', category: 'Express', eta: '12 mins', location: 'Kengeri Stop', status: 'En Route', progress: 85, speed: 54, rpm: 1620, temp: 92, fuel: 64, tirePressure: { fl: 34, fr: 34, rl: 36, rr: 36 } },
@@ -704,7 +705,7 @@ export const SimulationProvider = ({ children }) => {
   // General App Settings
   const [currentUser, setCurrentUser] = useState(null); // Customer, Driver, Admin
   const [appLanguage, setAppLanguage] = useState('English');
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState('light');
   const [isOffline, setIsOffline] = useState(false);
   const [toast, setToast] = useState(null);
   const [notifications, setNotifications] = useState([
@@ -1304,6 +1305,7 @@ export const SimulationProvider = ({ children }) => {
 
   return (
     <SimulationContext.Provider value={{
+      stopsList, setStopsList,
       buses, setBuses,
       parcels, setParcels,
       walletBalance, setWalletBalance,
@@ -1361,6 +1363,8 @@ export const SimulationProvider = ({ children }) => {
       depositParcelInLocker,
       startOtpGeofence,
       toggleMic,
+      playSound,
+      speakText,
       t
     }}>
       {children}
