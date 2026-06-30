@@ -61,7 +61,7 @@ The app features **dark & light mode**, a **dynamic ride scheduling system** whe
   - Bus Service Tier (Airavat Volvo, Rajahamsa, Karnataka Sarige)
   - Assigned Driver/Conductor name
   - Departure Time
-  - Destination — choose from existing Karnataka stops **or** add a custom city (auto-propagates to customer booking flow)
+  - Destination — choose from existing Karnataka stops **or** add a new Karnataka stop (auto-propagates to customer booking flow)
 - **Live KPI Dashboard** — Total Revenue & Active Load counts
 - **Global Fleet Tracker Map** — integrated dark-mode CartoDB Leaflet map displaying South/Central Karnataka routes with live pulsing bus markers and diagnostic tooltip popups
 - **SVG Bar Chart** — Daily revenue trend (Mon–Sun), clickable bars
@@ -88,7 +88,7 @@ The app is focused exclusively on **Karnataka KSRTC routes** originating from Be
 | Bengaluru – Mangaluru | Yeshwanthpur, Hassan KSRTC Bus Stand, Mangaluru Bus Depot |
 | Bengaluru – Hubli | Nelamangala Toll, Tumakuru Stand, Davangere KSRTC Stand, Hubli KSRTC Bus Stand |
 
-> **Admins can also add any custom city** through the scheduling form — the new stop dynamically appears in customer booking options.
+> **Admins can also add a new Karnataka stop** through the scheduling form — the new stop dynamically appears in customer booking options.
 
 ---
 
@@ -158,7 +158,7 @@ routevelo-app/
 │       ├── TrackingView.jsx    # Live transit timeline, milestones, conductor chat
 │       ├── UserProfileView.jsx # Localizations, profile settings, unlocked themes
 │       ├── DriverDashboard.jsx # Bus selector, safety checklist, QR scanner, engine/tire fixes
-│       ├── AdminDashboard.jsx  # Stats, fleet map, dynamic ride scheduling & custom city form
+│       ├── AdminDashboard.jsx  # Stats, fleet map, dynamic ride scheduling & custom Karnataka stop form
 │       ├── LiveVectorTrackingMap.jsx # Theme-reactive Leaflet map for customer tracking
 │       └── AdminFleetMap.jsx   # Interactive Leaflet map for Admin command center
 ```
@@ -200,7 +200,7 @@ Change language in **Profile → Localization Language**.
 - ☀️🌙 **Dark / Light mode toggle** in the status bar
 - 🗺️ **Karnataka-only stop network** — PITX/Cubao replaced with BLR (Kempegowda Majestic) and MYS (Mysuru Central)
 - 📅 **Dynamic ride scheduling** in Admin — set Bus ID, driver, departure time, and destination
-- ➕ **Custom city creator** — admins can add new Karnataka cities that instantly appear in customer booking
+- ➕ **New Karnataka stop creator** — admins can add new Karnataka stops that instantly appear in customer booking
 - 🚌 **Driver Bus ID selector** on login — conductors pick their bus and land on that specific console
 - 🔄 **Reactive stopsList** — global state shared across Admin, Customer, and Driver views
 - 🔁 Pre-shift bus selector in Driver Console for re-assignment
